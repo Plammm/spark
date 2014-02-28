@@ -11,7 +11,11 @@
 #include <boost/lexical_cast.hpp>
 #include <typeinfo>
 #include <memory>
-#include <dirent.h>
+//#include <dirent.h>
+
+//#include <boost/filesystem/operations.hpp>
+//#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem.hpp>
 
 #ifndef cimg_imagepath
 #define cimg_imagepath "../CImg/CImg-1.5.7/examples/img/"
@@ -36,6 +40,7 @@
 
 using namespace std;
 using namespace cimg_library;
+//using namespace boost::filesystem; 
 
 
 void handler(int sig) {
@@ -436,7 +441,7 @@ namespace ExpParser
   }
 
   bool isLetter(char c){
-    return isalpha(c) || isalnum(c);
+    return isalpha(c) || isalnum(c) || c == '_';
   }
 
   int identToken(string s, unsigned int pos){
@@ -1773,6 +1778,44 @@ public: \
     }
   } fseq;
 
+  class FList_Files: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      //int start, step, stop;
+      //      if (parameters.size() == 2){
+      check_parameters(1);
+      getany(string,dirname);
+
+      boost::filesystem::path directory = boost::filesystem::path(dirname);
+
+      vector<string> files;
+      
+      if( exists( directory ) )
+      	{
+      	  boost::filesystem::directory_iterator end ;
+      	  for( boost::filesystem::directory_iterator iter(directory) ; iter != end ; ++iter )
+      	    if ( boost::filesystem::is_directory( *iter ) )
+      	      {
+      		//cout << iter->native_directory_string() << " (directory)\n" ;
+      		//if( recurse_into_subdirs ) show_files(*iter) ;
+      	      }
+      	    else{
+	      files.push_back(iter->path().string());
+	    }
+      	}
+      sort(files.begin(), files.end());
+      vector<Value*>* v = new vector<Value*>;
+      for(unsigned int i = 0; i < files.size(); i++){
+	cout << files[i] << " (file)\n" ;
+	v->push_back(new ValueAny<string>(files[i], files[i]));
+      }
+      return new ValueAny<vector<Value*>*>(v, vectorinttype);
+    }
+    FList_Files(){
+      name = "list_files";
+    }
+  } flist_files;
+
   class FPlane: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*> parameters){
@@ -2191,6 +2234,7 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::fresize);
   env->functions.push_back(&ExpParser::fclear);
   env->functions.push_back(&ExpParser::fstring);
+  env->functions.push_back(&ExpParser::flist_files);
   //  env->add("scene", new ExpParser::Value((void*)new Image::fm3d, "fm3d"));
   //  env->names.push_back("scene");
   //env->values.push_back(new ExpParser::Value((void*)"AAA", "fm3d"));

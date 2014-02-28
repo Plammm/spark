@@ -17,11 +17,14 @@ dino: spark
 abribus: spark
 	./spark -s scenes/common.sp -s scenes/abribus.sp -e "abribus();"
 
+happy: spark
+	./spark -s scenes/common.sp -s scenes/happy.sp
+
 e:
 	emacs Makefile spark.cpp&
 
 spark: spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
-	g++ -g -o spark spark.cpp  -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -std=c++11
+	g++ -g -o spark spark.cpp  -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
 
 cleanoutput:
 	rm -f output/image*.bmp output/*.mp3

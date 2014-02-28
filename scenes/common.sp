@@ -79,7 +79,7 @@ var rotate(mesh) =
     //set gamma = gamma + 0.03;
     reset();
     //img.text(100, 100, (string(alpha) + " ") +string(beta), white, 1, 30);
-    img.drawmesh(mesh, 200, 200, 0, alpha, beta, gamma, 700);
+    img.drawmesh(mesh, 400, 300, 0, alpha, beta, gamma, 700);
     snapshot();
   }
 };
