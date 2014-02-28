@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 #include <typeinfo>
 #include <memory>
+#include <dirent.h>
 
 #ifndef cimg_imagepath
 #define cimg_imagepath "../CImg/CImg-1.5.7/examples/img/"
@@ -21,10 +22,17 @@
 #define here //{cout << "Here: " << __LINE__ << endl;}
 
 #define check_parameters(siz) if (parameters.size() != siz) faileval;int n = 0;
-#define getptr(t,tt,v) if(parameters[n]->kind != Ptr || parameters[n]->ptr_kind != tt) faileval;t* v = (t*)parameters[n]->ptr;n++;
-#define getint(v) if(!parameters[n]->isNum) faileval; int v = parameters[n]->intValue;n++;
-#define getdouble(v) if(!parameters[n]->isNum) faileval; double v = parameters[n]->doubleValue;n++;
-#define getstring(v) if(parameters[n]->kind != String) faileval; string v = parameters[n]->stringValue;n++;
+//#define getptr(t,tt,v) if(parameters[n]->kind != Ptr || parameters[n]->ptr_kind != tt) faileval;t* v = (t*)parameters[n]->ptr;n++;
+#define getany(any,v) ValueAny<any>* v ## ptr = dynamic_cast<ValueAny<any>*>(parameters[n]); if (v ## ptr == 0) faileval; any v = v ## ptr->value; n++;
+#define getptr(any,t,v) getany(any*,v)
+#define getdouble(v) ValueAny<double>* v ## ddd = doubleValue(parameters[n]); if (v ## ddd == 0) faileval; double v = v ## ddd->value; n++;
+#define getint(v) ValueAny<int>* v ## ddd = intValue(parameters[n]); if (v ## ddd == 0) faileval; int v = v ## ddd->value; n++;
+
+//#define getint(v) ValueAny<int>* v ## ptr = dynamic_cast<ValueAny<int>*>(parameters[n]); if (v ## ptr == 0) faileval; int v = v ## ptr->value; n++;
+
+//if(!parameters[n]->isNum) faileval; int v = parameters[n]->intValue;n++;
+//#define getdouble(v) if(!parameters[n]->isNum) faileval; double v = parameters[n]->doubleValue;n++;
+//#define get(string,v) if(parameters[n]->kind != String) faileval; string v = parameters[n]->stringValue;n++;
 
 using namespace std;
 using namespace cimg_library;
@@ -152,7 +160,26 @@ namespace Image
   }
 
   struct Plane3d {
-    typedef typename cimg::last<unsigned int,float>::type floatT;
+    typedef typename cimg::last<float,float>::type floatT;
+
+    static CImg<float> plane3d(CImgList<float>& primitives,
+				const float size_x=100, const float size_z=100,
+				const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
+      primitives.assign();
+      if (!subdivisions_x || !subdivisions_y) return CImg<floatT>();
+      CImgList<floatT> vertices;
+      const unsigned int w = subdivisions_x + 1, h = subdivisions_y + 1;
+      const float fx = (float)size_x/subdivisions_x, fy = (float)size_z/subdivisions_y;
+      for (unsigned int y = 0; y<h; ++y)
+	for (unsigned int x = 0; x<w; ++x)
+	  CImg<floatT>::vector(fx*x,fy*y,0).move_to(vertices);
+      for (unsigned int y = 0; y<subdivisions_y; ++y) for (unsigned int x = 0; x<subdivisions_x; ++x) {
+	  const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
+	  CImg<float>::vector(off1,off2, off3, off4).move_to(primitives);
+	  CImg<float>::vector(off1,off4, off3, off2).move_to(primitives);
+	}
+      return vertices>'x';
+    }
 
     static CImg<float> hplane3d(CImgList<unsigned int>& primitives,
 				const float size_x=100, const float size_z=100,
@@ -161,12 +188,14 @@ namespace Image
       if (!subdivisions_x || !subdivisions_y) return CImg<floatT>();
       CImgList<floatT> vertices;
       const unsigned int w = subdivisions_x + 1, h = subdivisions_y + 1;
-      const float fx = (float)size_x/w, fy = (float)size_z/h;
-      for (unsigned int y = 0; y<h; ++y) for (unsigned int x = 0; x<w; ++x)
-					   CImg<floatT>::vector(fx*x,0, fy*y).move_to(vertices);
+      const float fx = (float)size_x/subdivisions_x, fy = (float)size_z/subdivisions_y;
+      for (unsigned int y = 0; y<h; ++y)
+	for (unsigned int x = 0; x<w; ++x)
+	  CImg<floatT>::vector(fx*x,0, fy*y).move_to(vertices);
       for (unsigned int y = 0; y<subdivisions_y; ++y) for (unsigned int x = 0; x<subdivisions_x; ++x) {
 	  const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
 	  CImg<unsigned int>::vector(off1,off2, off3, off4).move_to(primitives);
+	  CImg<unsigned int>::vector(off1,off4, off3, off2).move_to(primitives);
 	}
       return vertices>'x';
     }
@@ -307,8 +336,8 @@ namespace Image
 
 
   unique_ptr<MyMesh> fmplane3d(const float size_x, const float size_y, const unsigned int subdivisions_x, const unsigned int subdivisions_y, const int x, const int y, const  int z, CImg<unsigned char> &color, float opacity){
-    CImgList<unsigned int> prims;
-    CImg<float> pts = CImg<>::plane3d(prims,size_x,size_y,subdivisions_x,subdivisions_y).shift_object3d(x,y,z);
+    CImgList<float> prims;
+    CImg<float> pts = Plane3d::plane3d(prims,size_x,size_y,subdivisions_x,subdivisions_y).shift_object3d(x,y,z);
     CImgList<unsigned char> cols = CImgList<unsigned char>(prims.size(), color);
     CImg<float> opacities = CImg<float>(prims.size(), opacity);
     unique_ptr<MyMesh> result(new MyMesh);
@@ -541,76 +570,168 @@ namespace ExpParser
 
   class Value {
   public:
-    bool isNum;
-    int intValue;
-    double doubleValue;
-    string stringValue;
-    unique_ptr<Expr> funcValue;
-    vector<string> parameters;
-    void* ptr;
-    string ptr_kind;
+    virtual string tostring() = 0;
+    virtual int get_int() = 0;
+  };
+
+  template<typename T>
+  class ValueAny: public Value {
+  public:
+    T value;
+    string s;
   public:
     Kind kind;
-    Value(int v){
-      isNum = true;
-      kind = Int;
-      doubleValue = v;
-      intValue = v;
+    ValueAny(T v, string pp){
+      value = v;
+      s = pp;
     }
-    Value(double v){
-      isNum = true;
-      kind = Double;
-      intValue = (int)v;
-      doubleValue = v;
+    virtual string tostring(){
+      return s;
     }
-    Value(string v){
-      isNum = false;
-      kind = String;
-      stringValue = v;
-    }
-    Value(unique_ptr<Expr>& f, vector<string> params){
-      isNum = false;
-      kind = Function;
-      funcValue = move(f);
-      parameters = params;
-    }
-    Value(void* v, string k){
-      isNum = false;
-      kind = Ptr;
-      ptr_kind = k;
-      ptr = v;
-    }
-    string tostring(){
-      char output[1024];
-      switch(kind){
-      case Int:
-        sprintf(output, "%i", intValue);
-	//cout << output << " !!" << endl;
-	return output;
-	break;
-      case Double:
-        sprintf(output, "%g", doubleValue);
-	return output;
-	break;
-      case String:
-	return stringValue;
-	break;
-      case Function:
-	return "<fun>";
-	break;
-      // case Cimg_char:
-      // 	return "< ?? >";
-      // 	break;
-      case Ptr:
-	return "<" + ptr_kind + ">";
-	break;
-      }
-      cout << "Kind" << kind << endl;
-      faileval;
+    virtual int get_int(){
+      return 0;
     }
   };
 
-  Value* unit = new Value(0);
+  template<>
+  class ValueAny<int>: public Value {
+  public:
+    int value;
+    string s;
+  public:
+    Kind kind;
+    ValueAny(int v, string pp){
+      value = v;
+      s = pp;
+    }
+    ValueAny(int v){
+      char output[1024];
+      sprintf(output, "%i", v);
+      value = v;
+      s = output;
+    }
+    virtual string tostring(){
+      return s;
+    }
+    virtual int get_int(){
+      return value;
+    }
+  };
+
+  template<>
+  class ValueAny<double>: public Value {
+  public:
+    double value;
+    string s;
+  public:
+    Kind kind;
+    ValueAny(double v, string pp){
+      value = v;
+      s = pp;
+    }
+    ValueAny(double v){
+      char output[1024];
+      sprintf(output, "%g", v);
+      value = v;
+      s = output;
+    }
+    virtual string tostring(){
+      return s;
+    }
+    virtual int get_int(){
+      return (int) value;
+    }
+  };
+
+  class ValueF: public Value {
+  public:
+    unique_ptr<Expr> funcValue;
+    vector<string> parameters;
+    ValueF(unique_ptr<Expr>& f, vector<string> params){
+      funcValue = move(f);
+      parameters = params;
+    }
+    string tostring(){
+      return "<fun>";
+    }
+    virtual int get_int(){
+      faileval;
+    }
+  };
+ 
+  // template<typename T>
+  // class ValueFM: public Value {
+  // public:
+  //   bool isNum;
+  //   int intValue;
+  //   double doubleValue;
+  //   string stringValue;
+  //   unique_ptr<Expr> funcValue;
+  //   vector<string> parameters;
+  //   void* ptr;
+  //   string ptr_kind;
+  // public:
+  //   Kind kind;
+  //   ValueFM(int v){
+  //     isNum = true;
+  //     kind = Int;
+  //     doubleValue = v;
+  //     intValue = v;
+  //   }
+  //   ValueFM(double v){
+  //     isNum = true;
+  //     kind = Double;
+  //     intValue = (int)v;
+  //     doubleValue = v;
+  //   }
+  //   ValueFM(string v){
+  //     isNum = false;
+  //     kind = String;
+  //     stringValue = v;
+  //   }
+  //   ValueFM(unique_ptr<Expr>& f, vector<string> params){
+  //     isNum = false;
+  //     kind = Function;
+  //     funcValue = move(f);
+  //     parameters = params;
+  //   }
+  //   ValueFM(void* v, string k){
+  //     isNum = false;
+  //     kind = Ptr;
+  //     ptr_kind = k;
+  //     ptr = v;
+  //   }
+  //   string tostring(){
+  //     char output[1024];
+  //     switch(kind){
+  //     case Int:
+  //       sprintf(output, "%i", intValue);
+  // 	//cout << output << " !!" << endl;
+  // 	return output;
+  // 	break;
+  //     case Double:
+  //       sprintf(output, "%g", doubleValue);
+  // 	return output;
+  // 	break;
+  //     case String:
+  // 	return stringValue;
+  // 	break;
+  //     case Function:
+  // 	return "<fun>";
+  // 	break;
+  //     // case Cimg_char:
+  //     // 	return "< ?? >";
+  //     // 	break;
+  //     case Ptr:
+  // 	return "<" + ptr_kind + ">";
+  // 	break;
+  //     }
+  //     cout << "Kind" << kind << endl;
+  //     faileval;
+  //   }
+  // };
+
+  Value* unit = new ValueAny<int>(0, "unit");
 
   class FValue {
   public:
@@ -664,7 +785,7 @@ namespace ExpParser
       return result;
     }
     virtual Value* eval(Env&){
-      return new Value(v);
+      return new ValueAny<string>(v, v);
     }
     virtual string tostring(){
       return v;
@@ -771,8 +892,8 @@ namespace ExpParser
 	here;
 	for(int i = env.names.size() -1; 0 <= i; i--)
 	  if (name == env.names[i]){
-	    Value* f = env.values[i];
-	    if (!f->kind == Function)
+	    ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
+	    if (f == 0)
 	      faileval;
 	    //if (f->funcValue
 	    //vector<Value*> params;
@@ -802,14 +923,12 @@ namespace ExpParser
 	float res = 0.;
 	char* nameChars = (char*)(name.data());
 	sscanf(nameChars, "%g", &res);
-	if (name == "-0.5")
-	  cout << name << " " << res << endl;
-	return new Value((double)res);
+	return new ValueAny<double>((double)res, name);
       } else if (isint(name)){
 	int res = 0;
 	char* nameChars = (char*)(name.data());
 	sscanf(nameChars, "%i", &res);
-	return new Value(res);
+	return new ValueAny<int>(res, name);
       }
       cout << "Unknown variable: " + name << endl;
       faileval;
@@ -885,7 +1004,7 @@ namespace ExpParser
     virtual Value* eval(Env& env){
       env.names.push_back(name);
       if (isFunction)
-	env.values.push_back(new Value(value, parameters));
+	env.values.push_back(new ValueF(value, parameters));
       else
 	env.values.push_back(value->eval(env));
       return unit;
@@ -1031,16 +1150,17 @@ namespace ExpParser
       return "for("+variable+" in "+seq->tostring()+") "+command->tostring();
     }
     virtual Value* eval(Env& env){
-      Value* seqvalue = seq->eval(env);
-      if(seqvalue->kind != Ptr || seqvalue->ptr_kind != vectorinttype)
+      //      Value* seqvalue = seq->eval(env);
+      ValueAny<vector<Value*>*>* seqvalue = dynamic_cast<ValueAny<vector<Value*>*>*>(seq->eval(env));
+      if (seqvalue == 0)
 	faileval;
-      vector<int>* intseq = (vector<int>*)seqvalue->ptr;
+      vector<Value*>* vect = seqvalue->value;
       int length = env.names.size();
       env.names.push_back(variable);
       env.values.push_back(unit);
-      for(unsigned int i = 0; i < intseq->size(); i++)
+      for(unsigned int i = 0; i < vect->size(); i++)
 	{
-	  env.values[length] = new Value((*intseq)[i]);
+	  env.values[length] = (*vect)[i];
 	  command->eval(env);
 	}
       env.names.resize(length);
@@ -1070,7 +1190,7 @@ namespace ExpParser
       return "while("+cond->tostring()+") "+command->tostring();
     }
     virtual Value* eval(Env& env){
-      while(cond->eval(env)->intValue != 0){
+      while(cond->eval(env)->get_int() != 0){
 	int length = env.names.size();
 	command->eval(env);
 	env.names.resize(length);
@@ -1104,7 +1224,7 @@ namespace ExpParser
       return "if("+cond->tostring()+") "+commandt->tostring() + " else " + commande->tostring();
     }
     virtual Value* eval(Env& env){
-      if(cond->eval(env)->intValue != 0)
+      if(cond->eval(env)->get_int() != 0)
 	return commandt->eval(env);
       else
 	return commande->eval(env);
@@ -1144,21 +1264,25 @@ namespace ExpParser
     ParserBinOps(string ops, Parser* rec){this->ops = ops; this->rec = rec;}
     unique_ptr<Expr> parse(string s, int& nextPos){
       unique_ptr<Expr> f1 = rec->parse(s, nextPos);
-      if (!HasToken(s, nextPos))
-	return f1;
-      int innerNextPos = nextPos;
-      unique_ptr<token> tok = NextToken(s, innerNextPos);
-      if (tok->type == Op && tok->s.length() == 1 && ops.find(tok->s) != string::npos){
-	innerNextPos = tok->nextPos;
-	unique_ptr<Expr> f2 = rec->parse(s, innerNextPos);
-	unique_ptr<Func> result(new Func);
-	result->isInfix = true;
-	result->isFunction = true;
-	result->name = tok->s;
-	nextPos = innerNextPos;
-	result->parameters.push_back(move(f1));
-	result->parameters.push_back(move(f2));
-	return move(result);
+      while(true){
+	if (!HasToken(s, nextPos))
+	  return f1;
+	int innerNextPos = nextPos;
+	unique_ptr<token> tok = NextToken(s, innerNextPos);
+	if (tok->type == Op && tok->s.length() == 1 && ops.find(tok->s) != string::npos){
+	  innerNextPos = tok->nextPos;
+	  unique_ptr<Expr> f2 = rec->parse(s, innerNextPos);
+	  unique_ptr<Func> result(new Func);
+	  result->isInfix = true;
+	  result->isFunction = true;
+	  result->name = tok->s;
+	  nextPos = innerNextPos;
+	  result->parameters.push_back(move(f1));
+	  result->parameters.push_back(move(f2));
+	  f1 = move(result);
+	}
+	else
+	  break;
       }
       return f1;
     }
@@ -1457,6 +1581,20 @@ namespace ExpParser
   //     cout << ")";
   // }
 
+  ValueAny<double>* doubleValue(Value* p){
+      ValueAny<int>* pi = dynamic_cast<ValueAny<int>*>(p);
+      if (pi != 0)
+	return new ValueAny<double>(pi->value, pi->s);
+      return dynamic_cast<ValueAny<double>*>(p);
+  }
+
+  ValueAny<int>* intValue(Value* p){
+      ValueAny<double>* pd = dynamic_cast<ValueAny<double>*>(p);
+      if (pd != 0)
+	return new ValueAny<int>(pd->value);
+      return dynamic_cast<ValueAny<int>*>(p);
+  }
+
   class FPlus: public FValue {
   public:
     Value* eval(vector<Value*> parameters){
@@ -1464,19 +1602,36 @@ namespace ExpParser
 	faileval
       Value* p1 = parameters[0];
       Value* p2 = parameters[1];
-      if (!(p1->isNum && p2->isNum))
+      ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1);
+      ValueAny<string>* p1s = dynamic_cast<ValueAny<string>*>(p1);
+      ValueAny<int>* p2i = dynamic_cast<ValueAny<int>*>(p2);
+      ValueAny<string>* p2s = dynamic_cast<ValueAny<string>*>(p2);
+      if (p1s != 0 && p2s != 0)
+	return new ValueAny<string>(p1s->value + p2s->value, p1s->value + p2s->value);
+      else if (p1i != 0 && p2i != 0)
+	return new ValueAny<int>(p1i->value + p2i->value, p1i->s + p2i->s);
+      ValueAny<double>* p1d = doubleValue(p1);
+      if (p1d == 0)
 	faileval;
-      if (p1->kind == Int && p2->kind == Int)
-	return new Value(p1->intValue + p2->intValue);
-      return new Value(p1->doubleValue + p2->doubleValue);
+      ValueAny<double>* p2d = doubleValue(p2);
+      if (p2d == 0)
+	faileval;
+      return new ValueAny<double>(p1d->value + p2d->value, "double value");
+      
 
-      if (p1->kind == p2->kind && p1->kind == String)
-	new Value(p1->stringValue + p2->stringValue);
-      else if (!(p1->isNum && p2->isNum))
-	faileval;
-      if (p1->kind == Int && p2->kind == Int)
-	return new Value(p1->intValue + p2->intValue);
-      return new Value(p1->doubleValue + p2->doubleValue);
+      // if (!(p1->isNum && p2->isNum))
+      // 	faileval;
+      // if (p1->kind == Int && p2->kind == Int)
+      // 	return new Value(p1->intValue + p2->intValue);
+      // return new Value(p1->doubleValue + p2->doubleValue);
+
+      // if (p1->kind == p2->kind && p1->kind == String)
+      // 	new Value(p1->stringValue + p2->stringValue);
+      // else if (!(p1->isNum && p2->isNum))
+      // 	faileval;
+      // if (p1->kind == Int && p2->kind == Int)
+      // 	return new Value(p1->intValue + p2->intValue);
+      // return new Value(p1->doubleValue + p2->doubleValue);
     }
     FPlus(){
       name = "+";
@@ -1489,22 +1644,29 @@ namespace ExpParser
       if (parameters.size() == 1)
   	{
 	  Value* p1 = parameters[0];
-	  if (p1->kind == Int)
-	    return new Value(-p1->intValue);
-	  else if (p1->kind == Double)
-	    return new Value(-p1->doubleValue);
-	  else faileval;
+	  ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1);
+	  if (p1i != 0)
+	    return new ValueAny<int>(-p1i->value);
+	  ValueAny<double>* p1d = dynamic_cast<ValueAny<double>*>(p1);
+	  if (p1d != 0)
+	    return new ValueAny<double>(-p1d->value);
+	  faileval;
 	}
-      else if (parameters.size() != 2){
+      else if (parameters.size() != 2)
   	faileval;
-      }
       Value* p1 = parameters[0];
       Value* p2 = parameters[1];
-      if (!(p1->isNum && p2->isNum))
+      ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1);
+      ValueAny<int>* p2i = dynamic_cast<ValueAny<int>*>(p2);
+      if (p1i != 0 && p2i != 0)
+	return new ValueAny<int>(p1i->value - p2i->value);
+      ValueAny<double>* p1d = doubleValue(p1);
+      if (p1d == 0)
 	faileval;
-      if (p1->kind == Int && p2->kind == Int)
-	return new Value(p1->intValue - p2->intValue);
-      return new Value(p1->doubleValue - p2->doubleValue);
+      ValueAny<double>* p2d = doubleValue(p2);
+      if (p2d == 0)
+	faileval;
+      return new ValueAny<double>(p1d->value - p2d->value);
     }
     FMinus(){
       name = "-";
@@ -1517,12 +1679,18 @@ public: \
     if (parameters.size() != 2) \
       faileval; \
     Value* p1 = parameters[0]; \
-    Value* p2 = parameters[1]; \
-    if (!(p1->isNum && p2->isNum)) \
-      faileval; \
-    if (p1->kind == Int && p2->kind == Int) \
-      return new Value(p1->intValue op p2->intValue); \
-    return new Value(p1->doubleValue op p2->doubleValue); \
+  Value* p2 = parameters[1]; \
+  ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1); \
+  ValueAny<int>* p2i = dynamic_cast<ValueAny<int>*>(p2); \
+  if (p1i != 0 && p2i != 0) \
+    return new ValueAny<int>(p1i->value op p2i->value); \
+  ValueAny<double>* p1d = doubleValue(p1); \
+  if (p1d == 0) \
+    faileval; \
+  ValueAny<double>* p2d = doubleValue(p2); \
+  if (p2d == 0) \
+    faileval; \
+  return new ValueAny<double>(p1d->value op p2d->value); \
   } \
   classname(){ \
     name = sname; \
@@ -1562,20 +1730,13 @@ public: \
   class FColor: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*> parameters){
-      if (parameters.size() != 3)
-	faileval;
-      Value* p1 = parameters[0];
-      Value* p2 = parameters[1];
-      Value* p3 = parameters[2];
-      if (!(p1->kind == Int))
-	faileval;
-      if (!(p2->kind == Int))
-	faileval;
-      if (!(p3->kind == Int))
-	faileval;
-      CImg<unsigned char>* color = new CImg<unsigned char>(CImg<unsigned char>::vector(p1->intValue, p2->intValue, p3->intValue));
+      check_parameters(3);
+      getint(p1);
+      getint(p2);
+      getint(p3);
+      CImg<unsigned char>* color = new CImg<unsigned char>(CImg<unsigned char>::vector(p1, p2, p3));
       //cout << "COL create " << color->size() << endl;
-      return new Value((void*)color, name);
+      return new ValueAny<CImg<unsigned char>*>(color, name);
     }
     FColor(){
       name = "color";
@@ -1585,13 +1746,27 @@ public: \
   class FSeq: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*> parameters){
-      check_parameters(2);
-      getint(p0);
-      getint(p1);
-      vector<int>* v = new vector<int>;
-      for (int i = p0; i <= p1; i++)
-	v->push_back(i);
-      return new Value((void*)v, vectorinttype);
+      int start, step, stop;
+      if (parameters.size() == 2){
+	check_parameters(2);
+	getint(p0);
+	getint(p1);
+	start = p0;
+	stop = p1;
+	step = 1;
+      } else{
+	check_parameters(3);
+	getint(p0);
+	getint(p1);
+	getint(p2);
+	start = p0;
+	stop = p2;
+	step = p1;
+      }
+      vector<Value*>* v = new vector<Value*>;
+      for (int i = start; i <= stop; i += step)
+	v->push_back(new ValueAny<int>(i));
+      return new ValueAny<vector<Value*>*>(v, vectorinttype);
     }
     FSeq(){
       name = "seq";
@@ -1602,7 +1777,7 @@ public: \
   public:
     Value* eval(vector<Value*> parameters){
       check_parameters(10);
-      getptr(Image::MyMesh, mymeshtype,scene);
+      getany(Image::MyMesh*,scene);
       getint(p1);
       getint(p2);
       getint(p3);
@@ -1663,7 +1838,7 @@ public: \
     Value* eval(vector<Value*> parameters){
       if (parameters.size() != 0)
   	faileval;
-      return new Value((void*)new Image::MyMesh, mymeshtype);
+      return new ValueAny<Image::MyMesh*>(new Image::MyMesh, mymeshtype);
     }
     FNew3d(){
       name = "new3d";
@@ -1681,7 +1856,7 @@ public: \
       getint(p3);
       getint(p4);
       CImg<unsigned char>* img = new CImg<unsigned char>(p0,p1,p2,p3,p4);
-      return new Value((void*)img, cimguchar);
+      return new ValueAny<CImg<unsigned char>*>(img, cimguchar);
     }
     FNewimg(){
       name = "newimg";
@@ -1733,11 +1908,11 @@ public: \
   public:
     Value* eval(vector<Value*> parameters){
       check_parameters(1);
-      getstring(p0);
+      getany(string,p0);
       cout << "READING " << p0 << endl;;
       CImg<unsigned char>* image = new CImg<unsigned char>(CImg<unsigned char>().load(p0.data()));
-      cout << "Done " << p0 << endl;;
-      return new Value((void*)image, cimguchar);
+      cout << "Done " << p0 << " " << image->spectrum() << endl;;
+      return new ValueAny<CImg<unsigned char>*>(image, cimguchar);
     }
     Floadimage(){
       name = "loadimage";
@@ -1750,7 +1925,7 @@ public: \
       check_parameters(1);
       getptr(CImg<unsigned char>,cimguchar,img);
       CImg<unsigned char>* image = new CImg<unsigned char>(*img);
-      return new Value((void*)image, cimguchar);
+      return new ValueAny<CImg<unsigned char>*>(image, cimguchar);
     }
     Fcopyimage(){
       name = "copyimage";
@@ -1758,17 +1933,41 @@ public: \
   } fcopyimage;
 
 
+  class Fresize: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      check_parameters(3);
+      getptr(CImg<unsigned char>,cimguchar,img);
+      getint(size_x);
+      getint(size_y);
+      CImg<unsigned char>* image;
+      if (size_x == -50 && size_y == -50)
+	image = new CImg<unsigned char>(img->get_resize_halfXY());
+      else
+      if (size_x == -200 && size_y == -200)
+	image = new CImg<unsigned char>(img->get_resize_doubleXY());
+      else
+	image = new CImg<unsigned char>(img->get_resize(size_x, size_y));
+      return new ValueAny<CImg<unsigned char>*>(image, cimguchar);
+    }
+    Fresize(){
+      name = "resize";
+    }
+  } fresize;
+
   class Fdrawimage: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*> parameters){
-      check_parameters(5);
+      check_parameters(6);
       getptr(CImg<unsigned char>,cimguchar,img);
       getptr(CImg<unsigned char>,cimguchar,image);
       getint(p2);
       getint(p3);
       getdouble(p4);
+      getint(transparent);
       //cout << "IMG" << img->size() << " " << image->size() << endl;
-      img->draw_image(p2, p3, *image, (float)p4);
+      img->draw_image_fm(p2, p3, 0, 0, *image, (float)p4, transparent != 0);
+      //img->draw_image(p2, p3, 0, 0, *image, (float)p4);
       return unit;
     }
     Fdrawimage(){
@@ -1780,13 +1979,13 @@ public: \
   public:
     Value* eval(vector<Value*> parameters){
       check_parameters(3);
-      getstring(path);
+      getany(string,path);
       getptr(CImg<unsigned char>,fcolor.name,col);
       getdouble(opacity);
       cout << "READING " << path << endl;;
       Image::MyMesh* mesh = (new Image::MyMesh())->readOFF(path, *col, opacity);
       cout << "Done " << path << endl;;
-      return new Value((void*)mesh, mymeshtype);
+      return new ValueAny<Image::MyMesh*>(mesh, mymeshtype);
     }
     Floadmesh(){
       name = "loadmesh";
@@ -1828,7 +2027,7 @@ public: \
       // 	img->display(disp);
       // }
      
-      return new Value((void*)new CImgDisplay(disp), "CImgDisplay");
+      return new ValueAny<CImgDisplay*>(new CImgDisplay(disp), "CImgDisplay");
     }
     Fnewdisplay(){
       name = "newdisplay";
@@ -1862,7 +2061,7 @@ public: \
 	getptr(CImg<unsigned char>,cimguchar,img);
 	getint(x);
 	getint(y);
-	getstring(s);
+	getany(string,s);
 	getptr(CImg<unsigned char>,fcolor.name,color);
 	getdouble(opacity);
 	getint(size);
@@ -1873,7 +2072,7 @@ public: \
 	getptr(CImg<unsigned char>,cimguchar,img);
 	getint(x);
 	getint(y);
-	getstring(s);
+	getany(string,s);
 	getptr(CImg<unsigned char>,fcolor.name,color);
 	getptr(CImg<unsigned char>,fcolor.name,bgcolor);
 	getdouble(opacity);
@@ -1892,7 +2091,8 @@ public: \
     Value* eval(vector<Value*> parameters){
       if (parameters.size() != 1)
 	faileval;
-      return new Value(parameters[0]->tostring());
+      string s = parameters[0]->tostring();
+      return new ValueAny<string>(s, s);
     }
     Fstring(){
       name = "string";
@@ -1988,6 +2188,7 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::floadimage);
   env->functions.push_back(&ExpParser::fcopyimage);
   env->functions.push_back(&ExpParser::fdrawimage);
+  env->functions.push_back(&ExpParser::fresize);
   env->functions.push_back(&ExpParser::fclear);
   env->functions.push_back(&ExpParser::fstring);
   //  env->add("scene", new ExpParser::Value((void*)new Image::fm3d, "fm3d"));
