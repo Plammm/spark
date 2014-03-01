@@ -327,7 +327,6 @@ namespace Image
       //cout << "draw2 " << rpoints.size() << " " << endl;
       img->draw_object3d(x, y, z, rpoints, primitives, colors, opacities, 4, false, focale);
       //cout << "draw3" << endl;
- 
       //      cout << "CC" << endl;
     }
   };
@@ -375,6 +374,48 @@ namespace Image
     //  scene->opacities.append(other->opacities);
     scene->opacities=(scene->opacities, other->opacities)>'x';
   }
+
+  class Metaball {
+  public:
+    float x, y, z, r, threshold;
+    Metaball(float x, float y, float z, float r, float threshold){
+      this->x = x;
+      this->y = y;
+      this->z = z;
+      this->r = r;
+      this->threshold = threshold;
+    }
+  };
+
+  class Metaballs {
+  private:
+    vector<Metaball*> balls;
+  public:
+    void add(float x, float y, float z, float r, float threshold){
+      balls.push_back(new Metaball(x, y, z, r, threshold));
+    }
+    inline float operator()(const float x, const float y, const float z) const {
+      float potential = 0;
+      for(unsigned int i = 0; i < balls.size(); i++){
+	float dx = x - balls[i]->x;
+	float dy = y - balls[i]->y;
+	float dz = z - balls[i]->z;
+	float r = (dx * dx + dy * dy + dz * dz) / balls[i]->r;
+	float v = 1 / (r);
+	//	if (r < balls[i]->threshold && ( potential == 0 || potential < v))
+	if (r < balls[i]->threshold)
+	  potential += v;//(1 - r * r) * (1 - r * r);
+	  //	  potential += 1 - r * (r * (4 * r + 17) - 22) / 9;
+      }
+      return potential;
+    }
+    MyMesh* mesh(float target, float r, int sub){
+      MyMesh* result = new MyMesh();
+      result->vertices = CImg<>::isosurface3d(result->primitives,*this,target,-r,-r,-r,r,r,r,sub);
+      result->primitives.reverse_object3d();
+      return result;
+    }
+  };
 }
 
 namespace ExpParser
@@ -1888,6 +1929,53 @@ public: \
     }
   } fnew3d;
 
+  class FNewmetaball: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      if (parameters.size() != 0)
+  	faileval;
+      return new ValueAny<Image::Metaballs*>(new Image::Metaballs, mymeshtype);
+    }
+    FNewmetaball(){
+      name = "newmetaball";
+    }
+  } fnewmetaball;
+
+
+  class Faddball: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      check_parameters(6);
+      getany(Image::Metaballs*,balls);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      getdouble(r);
+      getdouble(t);
+      balls->add(x, y, z, r, t);
+      return unit;
+    }
+    Faddball(){
+      name = "addball";
+    }
+  } faddball;
+
+  class Fmetaballsmesh: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      check_parameters(4);
+      getany(Image::Metaballs*,balls);
+      getdouble(target);
+      getdouble(r);
+      getint(sub);
+      Image::MyMesh* mesh = balls->mesh(target, r, sub);
+      return new ValueAny<Image::MyMesh*>(mesh, mymeshtype);
+    }
+    Fmetaballsmesh(){
+      name = "metaballsmesh";
+    }
+  } fmetaballsmesh;
+
 
   class FNewimg: public ExpParser::FValue {
   public:
@@ -2235,6 +2323,9 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::fclear);
   env->functions.push_back(&ExpParser::fstring);
   env->functions.push_back(&ExpParser::flist_files);
+  env->functions.push_back(&ExpParser::fnewmetaball);
+  env->functions.push_back(&ExpParser::faddball);
+  env->functions.push_back(&ExpParser::fmetaballsmesh);
   //  env->add("scene", new ExpParser::Value((void*)new Image::fm3d, "fm3d"));
   //  env->names.push_back("scene");
   //env->values.push_back(new ExpParser::Value((void*)"AAA", "fm3d"));
