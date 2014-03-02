@@ -1,4 +1,4 @@
-
+var play_happy () =
 {
   var balls = newmetametaball();
   var pt_plexus = newpoint(0, -10, 0);
@@ -8,11 +8,11 @@
 
   var pt_leftshoulder = pt_plexus.linkPoint(-2, 1.5, 0);
   var pt_leftelbow = pt_leftshoulder.linkPoint(-2, 2, 0);
-  var pt_leftarm = pt_leftelbow.linkPoint(-2, 2, 0); 
+  var pt_leftarm = pt_leftelbow.linkPoint(-2, 2, 0);
 
   var pt_rightshoulder = pt_plexus.linkPoint(2, 1.5, 0);
   var pt_rightelbow = pt_rightshoulder.linkPoint(2, 2, 0);
-  var pt_rightarm = pt_rightelbow.linkPoint(2, 2, 0); 
+  var pt_rightarm = pt_rightelbow.linkPoint(2, 2, 0);
 
   var pt_lefthip = pt_thigh.linkPoint(-1, 1, 0);
   var pt_leftknee = pt_lefthip.linkPoint(-1, 4, 0);
@@ -86,7 +86,7 @@
 
   var mesh = balls.metaballsmesh(0.5, 25, 1000);
   //  show(mesh);
-  rotate(mesh, - 250);
+  rotate(mesh, - 250, 5.4, 20);
 
   //  set mesh = balls.metaballsmesh(20, 400);
   //  show(mesh);
@@ -103,5 +103,5 @@
 	}
     }
 
-  //  show_video("videoextracts/testvideoiphone");
+  show_video("videoextracts/testvideoiphone");
 }

@@ -2,12 +2,12 @@ var imgens = loadimage("/home/fmaurel/prog/spark/input/ens1.jpg");
 var imgfif1 = loadimage("/home/fmaurel/prog/spark/input/fif1.jpg");
 var imgfif2 = loadimage("/home/fmaurel/prog/spark/input/fif2.jpg");
 
-abribus();
+play_abribus();
 
 raster();
 
 store();
-for (i in seq(0, 30)){
+for (i in seq(0, speed, 30)){
   restore();
   drawimage(img, imgens, 100, 100, i / 30.0, 0);
   snapshot();
@@ -15,7 +15,7 @@ for (i in seq(0, 30)){
 
 stay(5);
 restore();
-for (i in seq(0, 100)){
+for (i in seq(0, speed, 100)){
   restore();
   drawimage(img, imgfif1, 100 + i, 100, 1, 0);
   snapshot();
@@ -32,4 +32,4 @@ set year = 1997;
 play_dino();
 raster();
 raster();
-
+play_happy();

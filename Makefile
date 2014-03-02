@@ -6,7 +6,7 @@
 .phony:all e vid cleanoutput show backup publish
 
 all: spark
-	./spark -s scenes/common.sp -s scenes/abribus.sp -s scenes/scene.sp
+	./spark -s scenes/common.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
 
 fast: spark
 	./spark -s scenes/common.sp -e 'set waitlength = 0;' -s scenes/scene.sp
@@ -15,10 +15,10 @@ dino: spark
 	./spark -s scenes/common.sp -s scenes/dino.sp -e "play_dino();"
 
 abribus: spark
-	./spark -s scenes/common.sp -s scenes/abribus.sp -e "abribus();"
+	./spark -s scenes/common.sp -s scenes/abribus.sp -e "play_abribus();"
 
 happy: spark
-	./spark -s scenes/common.sp -s scenes/happy.sp
+	./spark -s scenes/common.sp -s scenes/happy.sp -e "play_happy();"
 
 e:
 	emacs Makefile spark.cpp&

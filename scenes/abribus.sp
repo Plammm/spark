@@ -3,7 +3,7 @@
 // apparition d'un abribus
 // affiche
 
-var abribus() =
+var play_abribus() =
 {
   var mysterymachine = loadimage("/home/fmaurel/prog/spark/input/mysterymachine2.gif");
   var rat1 = loadimage("/home/fmaurel/prog/spark/input/rat1.gif");

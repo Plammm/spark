@@ -1,7 +1,7 @@
 //arret de bus
 //dinosaur 3d
 
-var speed = 1;
+var speed = 5;
 
 var rate = 25;
 var imageid = 0;
@@ -68,13 +68,12 @@ var title(x, s) =
   }  
 };
 
-var rotate(mesh, z0) =
+var rotate(mesh, z0, beta0, beta1) =
 {
   var alpha = -0.5;
-  var beta = 5.4;
   var gamma = 0.0;
-  for(toto in seq(0, 99)){
-    set beta = beta + 0.05;
+  for(toto in seq(0, speed, 100)){
+    var beta = beta0 + beta1 * (toto / 100.0);
     reset();
     img.drawmesh(mesh, 640, 400, z0 - 4 * toto, alpha, beta, gamma, 700);
     snapshot();
@@ -85,11 +84,11 @@ var raster() =
 {
   var ploum(col) =
   {
-    for(toto in seq(0, rate - 1)){
+    for(toto in seq(0, speed, rate - 1)){
       var size = 100;
       for(i in seq(0, 12))
 	for(j in seq(0, 7)){
-	  rectangle(img, size * i, size * j, size * (i + 1) - 1, size * (j + 1) - 1, col(i, j), 0.02 * (i + 1) + 0.02 * (j + 1));
+	  rectangle(img, size * i, size * j, size * (i + 1) - 1, size * (j + 1) - 1, col(i, j), speed * 0.02 * (i + 1) + 0.02 * (j + 1));
 	}
       snapshot();
     };
