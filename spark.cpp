@@ -375,37 +375,124 @@ namespace Image
     scene->opacities=(scene->opacities, other->opacities)>'x';
   }
 
-  class Metaball {
+  // class Metaball {
+  // public:
+  //   float x, y, z, r, threshold;
+  //   Metaball(float x, float y, float z, float r, float threshold){
+  //     this->x = x;
+  //     this->y = y;
+  //     this->z = z;
+  //     this->r = r;
+  //     this->threshold = threshold;
+  //   }
+  // };
+
+  // class Metaballs {
+  // private:
+  //   vector<Metaball*> balls;
+  // public:
+  //   void add(float x, float y, float z, float r, float threshold){
+  //     balls.push_back(new Metaball(x, y, z, r, threshold));
+  //   }
+  //   inline float operator()(const float x, const float y, const float z) const {
+  //     float potential = 0;
+  //     for(unsigned int i = 0; i < balls.size(); i++){
+  // 	float dx = x - balls[i]->x;
+  // 	float dy = y - balls[i]->y;
+  // 	float dz = z - balls[i]->z;
+  // 	float r = (dx * dx + dy * dy + dz * dz) / balls[i]->r;
+  // 	float v = 1 / (r);
+  // 	//	if (r < balls[i]->threshold && ( potential == 0 || potential < v))
+  // 	if (r < balls[i]->threshold)
+  // 	  potential += v;//(1 - r * r) * (1 - r * r);
+  // 	  //	  potential += 1 - r * (r * (4 * r + 17) - 22) / 9;
+  //     }
+  //     return potential;
+  //   }
+  //   MyMesh* mesh(float target, float r, int sub){
+  //     MyMesh* result = new MyMesh();
+  //     result->vertices = CImg<>::isosurface3d(result->primitives,*this,target,-r,-r,-r,r,r,r,sub);
+  //     result->primitives.reverse_object3d();
+  //     return result;
+  //   }
+  // };
+
+  class supportPoint {
   public:
-    float x, y, z, r, threshold;
-    Metaball(float x, float y, float z, float r, float threshold){
+    float x, y, z;
+    vector<supportPoint*> links;
+  public:
+    supportPoint(float x, float y, float z){
       this->x = x;
       this->y = y;
       this->z = z;
-      this->r = r;
+    }
+    supportPoint* link(float dx, float dy, float dz){
+      supportPoint* result = new supportPoint(x + dx, y + dy, z + dz);
+      links.push_back(result);
+      return result;
+    }
+    void translate(float dx, float dy, float dz){
+      x += x;
+      y += dy;
+      z += dz;
+      for(unsigned int i = 0; i < links.size(); i++)
+	links[i]->translate(dx, dy, dz);
+    }
+  };
+
+  struct Ball {
+    supportPoint* point;
+    float radius;
+    float threshold;
+    Ball(supportPoint* point, float radius, float threshold){
+      this->point = point;
+      this->radius = radius;
       this->threshold = threshold;
     }
   };
 
-  class Metaballs {
-  private:
-    vector<Metaball*> balls;
+
+  class MetaBall {
   public:
-    void add(float x, float y, float z, float r, float threshold){
-      balls.push_back(new Metaball(x, y, z, r, threshold));
+    vector<Ball*> balls;
+    void add(supportPoint* point, float radius, float threshold){
+      balls.push_back(new Ball(point, radius, threshold));
     }
-    inline float operator()(const float x, const float y, const float z) const {
+    float potential(const float x, const float y, const float z) {
       float potential = 0;
       for(unsigned int i = 0; i < balls.size(); i++){
-	float dx = x - balls[i]->x;
-	float dy = y - balls[i]->y;
-	float dz = z - balls[i]->z;
-	float r = (dx * dx + dy * dy + dz * dz) / balls[i]->r;
+	float dx = x - balls[i]->point->x;
+	float dy = y - balls[i]->point->y;
+	float dz = z - balls[i]->point->z;
+	float r = (dx * dx + dy * dy + dz * dz) / balls[i]->radius;
 	float v = 1 / (r);
 	//	if (r < balls[i]->threshold && ( potential == 0 || potential < v))
 	if (r < balls[i]->threshold)
 	  potential += v;//(1 - r * r) * (1 - r * r);
 	  //	  potential += 1 - r * (r * (4 * r + 17) - 22) / 9;
+      }
+      return potential;
+    }
+  };
+
+  class MetaMetaBall {
+  private:
+    //vector<supportPoint> support;
+    vector<MetaBall*> balls;
+  public:
+    //    void add(float x, float y, float z, float r, float threshold){
+    //  balls.push_back(new Metaball(x, y, z, r, threshold));
+    //}
+    void add(MetaBall* ball){
+      balls.push_back(ball);
+    }
+    inline float operator()(const float x, const float y, const float z) const {
+      float potential = 0;
+      for (unsigned int i = 0; i < balls.size(); i++){
+	float pot = balls[i]->potential(x, y, z);
+	if (potential < pot)
+	  potential = pot;
       }
       return potential;
     }
@@ -1929,42 +2016,95 @@ public: \
     }
   } fnew3d;
 
+
+  class FNewpoint: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      check_parameters(3);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      return new ValueAny<Image::supportPoint*>(new Image::supportPoint(x, y, z), mymeshtype);
+    }
+    FNewpoint(){
+      name = "newpoint";
+    }
+  } fnewpoint;
+
+
+  class FLinkpoint: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      check_parameters(4);
+      getany(Image::supportPoint*,point);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      return new ValueAny<Image::supportPoint*>(point->link(x, y, z), mymeshtype);
+    }
+    FLinkpoint(){
+      name = "linkPoint";
+    }
+  } flinkpoint;
+
   class FNewmetaball: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*> parameters){
-      if (parameters.size() != 0)
+      if (parameters.size() <= 1)
   	faileval;
-      return new ValueAny<Image::Metaballs*>(new Image::Metaballs, mymeshtype);
+      unsigned int n = 0;
+      getany(Image::MetaMetaBall*,balls);
+      getdouble(radius);
+      getdouble(threshold);
+      Image::MetaBall* ball = new Image::MetaBall();
+      while(n < parameters.size()){
+	getany(Image::supportPoint*, point);
+	ball->add(point, radius, threshold);
+      }
+      balls->add(ball);
+      return unit;//new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
     }
     FNewmetaball(){
       name = "newmetaball";
     }
   } fnewmetaball;
 
-
-  class Faddball: public ExpParser::FValue {
+  class FNewmetametaball: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*> parameters){
-      check_parameters(6);
-      getany(Image::Metaballs*,balls);
-      getdouble(x);
-      getdouble(y);
-      getdouble(z);
-      getdouble(r);
-      getdouble(t);
-      balls->add(x, y, z, r, t);
-      return unit;
+      if (parameters.size() != 0)
+  	faileval;
+      return new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
     }
-    Faddball(){
-      name = "addball";
+    FNewmetametaball(){
+      name = "newmetametaball";
     }
-  } faddball;
+  } fnewmetametaball;
+
+
+  // // class Faddball: public ExpParser::FValue {
+  // // public:
+  // //   Value* eval(vector<Value*> parameters){
+  // //     check_parameters(6);
+  // //     getany(Image::MetaMetaBall*,balls);
+  // //     getdouble(x);
+  // //     getdouble(y);
+  // //     getdouble(z);
+  // //     getdouble(r);
+  // //     getdouble(t);
+  // //     balls->add(x, y, z, r, t);
+  // //     return unit;
+  // //   }
+  // //   Faddball(){
+  // //     name = "addball";
+  // //   }
+  // // } faddball;
 
   class Fmetaballsmesh: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*> parameters){
       check_parameters(4);
-      getany(Image::Metaballs*,balls);
+      getany(Image::MetaMetaBall*,balls);
       getdouble(target);
       getdouble(r);
       getint(sub);
@@ -2323,8 +2463,11 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::fclear);
   env->functions.push_back(&ExpParser::fstring);
   env->functions.push_back(&ExpParser::flist_files);
+  env->functions.push_back(&ExpParser::fnewpoint);
+  env->functions.push_back(&ExpParser::flinkpoint);
   env->functions.push_back(&ExpParser::fnewmetaball);
-  env->functions.push_back(&ExpParser::faddball);
+  env->functions.push_back(&ExpParser::fnewmetametaball);
+  //  env->functions.push_back(&ExpParser::faddball);
   env->functions.push_back(&ExpParser::fmetaballsmesh);
   //  env->add("scene", new ExpParser::Value((void*)new Image::fm3d, "fm3d"));
   //  env->names.push_back("scene");

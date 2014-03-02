@@ -68,18 +68,15 @@ var title(x, s) =
   }  
 };
 
-var rotate(mesh) =
+var rotate(mesh, z0) =
 {
   var alpha = -0.5;
   var beta = 5.4;
   var gamma = 0.0;
   for(toto in seq(0, 99)){
-    //set alpha = alpha - 0.05;
     set beta = beta + 0.05;
-    //set gamma = gamma + 0.03;
     reset();
-    //img.text(100, 100, (string(alpha) + " ") +string(beta), white, 1, 30);
-    img.drawmesh(mesh, 640, 400, - 4 * toto, alpha, beta, gamma, 700);
+    img.drawmesh(mesh, 640, 400, z0 - 4 * toto, alpha, beta, gamma, 700);
     snapshot();
   }
 };

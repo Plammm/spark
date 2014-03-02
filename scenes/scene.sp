@@ -1,4 +1,3 @@
-var dino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
 var imgens = loadimage("/home/fmaurel/prog/spark/input/ens1.jpg");
 var imgfif1 = loadimage("/home/fmaurel/prog/spark/input/fif1.jpg");
 var imgfif2 = loadimage("/home/fmaurel/prog/spark/input/fif2.jpg");
@@ -30,7 +29,7 @@ snapshot();
 stay(5);
 title(300, "Le Dino");
 set year = 1997;
-rotate(dino);
+play_dino();
 raster();
 raster();
 

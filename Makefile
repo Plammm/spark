@@ -12,7 +12,7 @@ fast: spark
 	./spark -s scenes/common.sp -e 'set waitlength = 0;' -s scenes/scene.sp
 
 dino: spark
-	./spark -s scenes/common.sp -e 'var dino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.02);rotate(dino);'
+	./spark -s scenes/common.sp -s scenes/dino.sp -e "play_dino();"
 
 abribus: spark
 	./spark -s scenes/common.sp -s scenes/abribus.sp -e "abribus();"
