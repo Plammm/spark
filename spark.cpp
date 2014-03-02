@@ -375,48 +375,6 @@ namespace Image
     scene->opacities=(scene->opacities, other->opacities)>'x';
   }
 
-  // class Metaball {
-  // public:
-  //   float x, y, z, r, threshold;
-  //   Metaball(float x, float y, float z, float r, float threshold){
-  //     this->x = x;
-  //     this->y = y;
-  //     this->z = z;
-  //     this->r = r;
-  //     this->threshold = threshold;
-  //   }
-  // };
-
-  // class Metaballs {
-  // private:
-  //   vector<Metaball*> balls;
-  // public:
-  //   void add(float x, float y, float z, float r, float threshold){
-  //     balls.push_back(new Metaball(x, y, z, r, threshold));
-  //   }
-  //   inline float operator()(const float x, const float y, const float z) const {
-  //     float potential = 0;
-  //     for(unsigned int i = 0; i < balls.size(); i++){
-  // 	float dx = x - balls[i]->x;
-  // 	float dy = y - balls[i]->y;
-  // 	float dz = z - balls[i]->z;
-  // 	float r = (dx * dx + dy * dy + dz * dz) / balls[i]->r;
-  // 	float v = 1 / (r);
-  // 	//	if (r < balls[i]->threshold && ( potential == 0 || potential < v))
-  // 	if (r < balls[i]->threshold)
-  // 	  potential += v;//(1 - r * r) * (1 - r * r);
-  // 	  //	  potential += 1 - r * (r * (4 * r + 17) - 22) / 9;
-  //     }
-  //     return potential;
-  //   }
-  //   MyMesh* mesh(float target, float r, int sub){
-  //     MyMesh* result = new MyMesh();
-  //     result->vertices = CImg<>::isosurface3d(result->primitives,*this,target,-r,-r,-r,r,r,r,sub);
-  //     result->primitives.reverse_object3d();
-  //     return result;
-  //   }
-  // };
-
   class supportPoint {
   public:
     float x, y, z;
@@ -456,6 +414,7 @@ namespace Image
   class MetaBall {
   public:
     vector<Ball*> balls;
+    CImg<unsigned char>* color;
     void add(supportPoint* point, float radius, float threshold){
       balls.push_back(new Ball(point, radius, threshold));
     }
@@ -500,6 +459,26 @@ namespace Image
       MyMesh* result = new MyMesh();
       result->vertices = CImg<>::isosurface3d(result->primitives,*this,target,-r,-r,-r,r,r,r,sub);
       result->primitives.reverse_object3d();
+
+      for(unsigned int i = 0; i < result->primitives.size(); i++){
+	float weight = 0.00001;
+	float r = 0;
+	float g = 0;
+	float b = 0;
+	CImg<float> f = result->primitives[i];
+	float x = result->vertices(f(0), 0);
+	float y = result->vertices(f(0), 1);
+	float z = result->vertices(f(0), 2);
+	for(unsigned bid = 0; bid < balls.size(); bid++){
+	  float potential = balls[bid]->potential(x, y, z);
+	  weight += potential;
+	  r += potential * (*(balls[bid]->color))(0);
+	  g += potential * (*(balls[bid]->color))(1);
+	  b += potential * (*(balls[bid]->color))(2);
+	}
+	//cout << f(0) << " " << r << " " << g << " " << b << " " << weight << " " << endl;
+	result->colors.insert(CImg<unsigned char>::vector(r / weight, g / weight, b / weight));
+      }
       return result;
     }
   };
@@ -2082,7 +2061,9 @@ public: \
       getany(Image::MetaMetaBall*,balls);
       getdouble(radius);
       getdouble(threshold);
+      getany(CImg<unsigned char>*,color);
       Image::MetaBall* ball = new Image::MetaBall();
+      ball->color = color;
       while(n < parameters.size()){
 	getany(Image::supportPoint*, point);
 	ball->add(point, radius, threshold);
@@ -2106,25 +2087,6 @@ public: \
       name = "newmetametaball";
     }
   } fnewmetametaball;
-
-
-  // // class Faddball: public ExpParser::FValue {
-  // // public:
-  // //   Value* eval(vector<Value*> parameters){
-  // //     check_parameters(6);
-  // //     getany(Image::MetaMetaBall*,balls);
-  // //     getdouble(x);
-  // //     getdouble(y);
-  // //     getdouble(z);
-  // //     getdouble(r);
-  // //     getdouble(t);
-  // //     balls->add(x, y, z, r, t);
-  // //     return unit;
-  // //   }
-  // //   Faddball(){
-  // //     name = "addball";
-  // //   }
-  // // } faddball;
 
   class Fmetaballsmesh: public ExpParser::FValue {
   public:
@@ -2208,7 +2170,7 @@ public: \
       getany(string,p0);
       cout << "READING " << p0 << endl;;
       CImg<unsigned char>* image = new CImg<unsigned char>(CImg<unsigned char>().load(p0.data()));
-      cout << "Done " << p0 << " " << image->spectrum() << endl;;
+      //      cout << "Done " << p0 << " " << image->spectrum() << endl;;
       return new ValueAny<CImg<unsigned char>*>(image, cimguchar);
     }
     Floadimage(){
@@ -2281,7 +2243,7 @@ public: \
       getdouble(opacity);
       cout << "READING " << path << endl;;
       Image::MyMesh* mesh = (new Image::MyMesh())->readOFF(path, *col, opacity);
-      cout << "Done " << path << endl;;
+      //      cout << "Done " << path << endl;;
       return new ValueAny<Image::MyMesh*>(mesh, mymeshtype);
     }
     Floadmesh(){
