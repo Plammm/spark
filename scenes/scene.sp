@@ -9,7 +9,7 @@ raster();
 store();
 for (i in seq(0, speed, 30)){
   restore();
-  drawimage(img, imgens, 100, 100, i / 30.0, 0);
+  img.drawimage(imgens, 100, 100, i / 30.0, 0);
   snapshot();
  };
 
@@ -17,12 +17,12 @@ stay(5);
 restore();
 for (i in seq(0, speed, 100)){
   restore();
-  drawimage(img, imgfif1, 100 + i, 100, 1, 0);
+  img.drawimage(imgfif1, 100 + i, 100, 1, 0);
   snapshot();
  };
 //stay(5);
 restore();
-drawimage(img, imgfif2, 100, 100, 1, 0);
+img.drawimage(imgfif2, 100, 100, 1, 0);
 
 snapshot();
 

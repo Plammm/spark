@@ -24,6 +24,7 @@ var play_abribus() =
 
   var abribusit(abribus, x, y, z) =
   {
+    var subd = 1;
     plane(abribus, 260, 25, subd, subd, x, y -200, z, brown, 0.9);
     plane(abribus, 20, 150, subd, subd, x, y -175, z, brown, 0.9);
     plane(abribus, 20, 150, subd, subd, x + 120, y -175, z, brown, 0.9);
@@ -39,15 +40,10 @@ var play_abribus() =
     var road = color(200, 200, 200);
     var rue = new3d();
     streetit(rue);
-
-    store();
-
-    //    var abribusback = new3d();
     var abribus = new3d();
-    var subd = 1;
-
     abribusit(abribus, 0, 0, 700);
 
+    store();
     var imgfif2 = loadimage("/home/fmaurel/prog/spark/input/fif2.jpg");
 
     var deltax = -10;
@@ -108,15 +104,15 @@ var play_abribus() =
     //    showrue(maxtime, 0);
     store();
     for (time in seq (0, speed, 50)){
-      clear(img);
-      drawimage(img, storedimage, 0, 0, 1 - time / 50., 0);
+      img.clear();
+      img.drawimage(storedimage, 0, 0, 1 - time / 50., 0);
       showabribus(maxtime, 0);
       snapshot();
     }
 
     store();
     for (time in seq (0, speed, 50)){
-      clear(img);
+      img.clear();
       //      drawimage(img, storedimage, 0, 0, 1 - time / 50., 0);
       showabribus(maxtime, time / 50.);
       snapshot();

@@ -680,10 +680,18 @@ namespace ExpParser
 
   class Expr;
 
+  template<typename T>
+  class member {
+  public:
+    string name;
+    virtual T* eval(vector<T*>& parameters) = 0;
+  };
+
   class Value {
   public:
     virtual string tostring() = 0;
     virtual int get_int() = 0;
+    vector<member<Value>*> members;
   };
 
   template<typename T>
@@ -848,7 +856,7 @@ namespace ExpParser
   class FValue {
   public:
     string name;
-    virtual Value* eval(vector<Value*> parameters)=0;
+    virtual Value* eval(vector<Value*>& parameters)=0;
   };
 
   class Env {
@@ -870,7 +878,7 @@ namespace ExpParser
     return 0;
   }
 
-  enum ExprKind { ExFunc };
+  enum ExprKind { ExFunc, ExComp };
 
   class Func;
 
@@ -938,7 +946,6 @@ namespace ExpParser
 	result->parameters.push_back(parameters[i]->substitute(names, values));
       return move(result);
     }
-
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       here;
       //unique_ptr<Expr>* v;// = assoc<string, Expr>(names, values, name));
@@ -979,7 +986,6 @@ namespace ExpParser
 	return move(result);
       }
     }
-
     virtual unique_ptr<Func> FuncMe(){
       return innerCopy();
     }
@@ -1023,7 +1029,6 @@ namespace ExpParser
 	    //int length = 
 	    faileval;
 	  }
-
 	cout << "Unknown function: " << name << " ";
 	faileval
       }
@@ -1068,6 +1073,68 @@ namespace ExpParser
 	}
       if (isFunction)
 	result += ")";
+      return result;
+    }
+  };
+
+  class Comp: public Expr {
+  public:
+    unique_ptr<Expr> v;
+    string member;
+    vector<unique_ptr<Expr>> parameters;
+    unique_ptr<Comp> innerCopy(){
+      here;
+      unique_ptr<Comp> result (new Comp);
+      result->member = member;
+      result->v = v->copy();
+      for(unsigned int i = 0; i < parameters.size(); i++)
+	result->parameters.push_back(parameters[i]->copy());
+      here;
+      return move(result);
+    }
+    unique_ptr<Expr> copy(){
+      return move(innerCopy());
+    }
+    Comp(){ kind=ExComp; }
+    unique_ptr<Expr> applySubstitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
+      here;
+      unique_ptr<Comp> result(new Comp);
+      result->member = member;
+      result->v = v->substitute(names, values);
+      for(unsigned int i = 0; i < parameters.size(); i++)
+	result->parameters.push_back(parameters[i]->substitute(names, values));
+      return move(result);
+    }
+    unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
+      here;
+      return applySubstitute(names, values);
+      here;      
+    }
+    virtual unique_ptr<Func> FuncMe(){ faileval; }
+    Value* eval(Env& env){
+      here;
+      Value* vv = v->eval(env);
+      for(unsigned int i = 0; i < vv->members.size(); i++)
+	if (member == vv->members[i]->name){
+	  vector<Value*> params;
+	  params.push_back(vv);
+	  for(unsigned int j = 0; j < parameters.size(); j++)
+	    params.push_back(parameters[j]->eval(env));
+	  return vv->members[i]->eval(params);
+	}
+      cout << "Unknown member: " << member << endl;
+      faileval;
+    }
+    string tostring() {
+      string result = v->tostring() + "." + member + "(";
+      unsigned int size = parameters.size();
+      for(unsigned int i = 0; i < size; i++)
+	{
+	  result += parameters[i]->tostring();
+	  if (i < size - 1)
+	    result += ", ";
+	}
+      result += ")";
       return result;
     }
   };
@@ -1410,8 +1477,18 @@ namespace ExpParser
     }
   };
 
+  unique_ptr<Expr> parsecomp(string s, int& nextPos);
+
+  class ParserComp: public Parser {
+  public:
+    virtual unique_ptr<Expr> parse(string s, int& nextPos){
+      return parsecomp(s, nextPos);
+    }
+  };
+
   Parser* parseApp = new ParserApp;
-  Parser* parseTimes = new ParserBinOps("*/", parseApp);
+  Parser* parseComp = new ParserComp;
+  Parser* parseTimes = new ParserBinOps("*/", parseComp);
   Parser* parsePlus = new ParserBinOps("+-", parseTimes);
   Parser* parseUMinus = new ParserUnaryOps("-", parsePlus);
   Parser* parseMod = new ParserBinOps("%", parseUMinus);
@@ -1465,21 +1542,21 @@ namespace ExpParser
 	  //int innerNextPos = nextPos;
 	  while(stackNotCommaClosePar(s, nextPos, result->parameters));
 	  //	nextPos = innerNextPos;
-	}else if (HasToken(s, nextPos, ".")){
-	  unique_ptr<string> f = getvar(s, nextPos);
-	  if (f == 0)
-	    failparse;
-	  result->isFunction = true;
-	  unique_ptr<Func> inside(new Func);
-	  inside->name = tok->s;
-	  result->parameters.push_back(move(inside));
-	  result->name = *f;
-	  if (!HasToken(s, nextPos, "("))
-	    failparse;
-	  //int innerNextPos = nextPos;
-	  while(stackNotCommaClosePar(s, nextPos, result->parameters));
-	  //nextPos = innerNextPos;
-	}
+	}// else if (HasToken(s, nextPos, ".")){
+	//   unique_ptr<string> f = getvar(s, nextPos);
+	//   if (f == 0)
+	//     failparse;
+	//   result->isFunction = true;
+	//   unique_ptr<Func> inside(new Func);
+	//   inside->name = tok->s;
+	//   result->parameters.push_back(move(inside));
+	//   result->name = *f;
+	//   if (!HasToken(s, nextPos, "("))
+	//     failparse;
+	//   //int innerNextPos = nextPos;
+	//   while(stackNotCommaClosePar(s, nextPos, result->parameters));
+	//   //nextPos = innerNextPos;
+	// }
 	return move(result);
       }
       break;
@@ -1496,6 +1573,24 @@ namespace ExpParser
     }
     return 0;
   }
+
+  unique_ptr<Expr> parsecomp(string s, int& nextPos){
+    unique_ptr<Expr> recPar = parseapp(s, nextPos);
+    if (HasToken(s, nextPos, ".")){
+      unique_ptr<Comp> result(new Comp);
+      unique_ptr<string> f = getvar(s, nextPos);
+      if (f == 0)
+	failparse;
+      if (!HasToken(s, nextPos, "("))
+	failparse;
+      result->v = move(recPar);
+      result->member = *f;
+      while(stackNotCommaClosePar(s, nextPos, result->parameters));
+      return move(result);
+    }
+    return recPar;
+  }
+
 
   bool stackNotCommaClosePar(string s, int& nextPos, vector<unique_ptr<Expr>>& list){
     if (HasToken(s, nextPos, ")"))
@@ -1710,7 +1805,7 @@ namespace ExpParser
 
   class FPlus: public FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 2)
 	faileval
       Value* p1 = parameters[0];
@@ -1753,7 +1848,7 @@ namespace ExpParser
 
   class FMinus: public FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       if (parameters.size() == 1)
   	{
 	  Value* p1 = parameters[0];
@@ -1788,7 +1883,7 @@ namespace ExpParser
 
   class FMod: public FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(2);
       getint(p1);
       getint(p2);
@@ -1801,7 +1896,7 @@ namespace ExpParser
 
   class FNot: public FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(1);
       getint(p1);
       return new ValueAny<int>(p1 == 0 ? 1 : 0);
@@ -1813,7 +1908,7 @@ namespace ExpParser
 
 #define binop(classname,fname,sname,op) class classname: public FValue { \
 public: \
-  Value* eval(vector<Value*> parameters){ \
+  Value* eval(vector<Value*>& parameters){ \
     if (parameters.size() != 2) \
       faileval; \
     Value* p1 = parameters[0]; \
@@ -1836,45 +1931,22 @@ public: \
   } fname
 
   binop(FTimes,ftimes,"*",*);
-  //  binop(FMinus,fminus,"-",- );
   binop(FDiv,fdiv,"/",/);
 
-  // class FTimes: public FValue {
-  // public:
-  //   Value* eval(vector<Value*> parameters){
-  //     if (parameters.size() != 2)
-  // 	faileval
-  //     Value* p1 = parameters[0];
-  //     Value* p2 = parameters[1];
-  //     if (p1->kind == p2->kind){
-  // 	if (p1->kind == Int)
-  // 	  return new Value(p1->intValue * p2->intValue);
-  // 	else if (p1->kind == Double)
-  // 	  return new Value(p1->doubleValue * p2->doubleValue);
-  // 	else faileval;
-  //     }
-  //     else if (p1->kind == Int && p2->kind == Double)
-  // 	return new Value(p1->intValue * p2->doubleValue);
-  //     else if (p2->kind == Int && p1->kind == Double)
-  // 	return new Value(p2->intValue * p1->doubleValue);
-  //     else
-  // 	faileval;
-  //   }
-  //   FTimes(){
-  //     name = "*";
-  //   }
-  // } ftimes;
+  ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point);
+  ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point);
+
 
   class FColor: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(3);
       getint(p1);
       getint(p2);
       getint(p3);
       CImg<unsigned char>* color = new CImg<unsigned char>(CImg<unsigned char>::vector(p1, p2, p3));
       //cout << "COL create " << color->size() << endl;
-      return new ValueAny<CImg<unsigned char>*>(color, name);
+      return newimage(color);
     }
     FColor(){
       name = "color";
@@ -1883,7 +1955,7 @@ public: \
 
   class FSeq: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       int start, step, stop;
       if (parameters.size() == 2){
 	check_parameters(2);
@@ -1913,16 +1985,13 @@ public: \
 
   class FList_Files: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       //int start, step, stop;
       //      if (parameters.size() == 2){
       check_parameters(1);
       getany(string,dirname);
-
       boost::filesystem::path directory = boost::filesystem::path(dirname);
-
       vector<string> files;
-      
       if( exists( directory ) )
       	{
       	  boost::filesystem::directory_iterator end ;
@@ -1939,7 +2008,7 @@ public: \
       sort(files.begin(), files.end());
       vector<Value*>* v = new vector<Value*>;
       for(unsigned int i = 0; i < files.size(); i++){
-	cout << files[i] << " (file)\n" ;
+	//	cout << files[i] << " (file)\n" ;
 	v->push_back(new ValueAny<string>(files[i], files[i]));
       }
       return new ValueAny<vector<Value*>*>(v, vectorinttype);
@@ -1951,7 +2020,7 @@ public: \
 
   class FPlane: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(10);
       getany(Image::MyMesh*,scene);
       getint(p1);
@@ -1972,10 +2041,9 @@ public: \
     }
   } fplane;
 
-
   class FHPlane: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(10);
       getptr(Image::MyMesh,mymeshtype,scene)
       getint(p1);
@@ -1998,7 +2066,7 @@ public: \
 
   class FShow: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(1);
       getptr(Image::MyMesh,mymeshtype,scene);
       Image::show(scene);
@@ -2011,7 +2079,7 @@ public: \
 
   class FNew3d: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 0)
   	faileval;
       return new ValueAny<Image::MyMesh*>(new Image::MyMesh, mymeshtype);
@@ -2020,16 +2088,30 @@ public: \
       name = "new3d";
     }
   } fnew3d;
-
+ 
+  class FLinkpoint: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(4);
+      getany(Image::supportPoint*,point);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      return newpoint(point->link(x, y, z));
+    }
+    FLinkpoint(){
+      name = "link";
+    }
+  } flinkpoint;
 
   class FNewpoint: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(3);
       getdouble(x);
       getdouble(y);
       getdouble(z);
-      return new ValueAny<Image::supportPoint*>(new Image::supportPoint(x, y, z), mymeshtype);
+      return newpoint(new Image::supportPoint(x, y, z));
     }
     FNewpoint(){
       name = "newpoint";
@@ -2037,24 +2119,9 @@ public: \
   } fnewpoint;
 
 
-  class FLinkpoint: public ExpParser::FValue {
+  class FNewmetaball: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
-      check_parameters(4);
-      getany(Image::supportPoint*,point);
-      getdouble(x);
-      getdouble(y);
-      getdouble(z);
-      return new ValueAny<Image::supportPoint*>(point->link(x, y, z), mymeshtype);
-    }
-    FLinkpoint(){
-      name = "linkPoint";
-    }
-  } flinkpoint;
-
-  class FNewmetaball: public ExpParser::FValue {
-  public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       if (parameters.size() <= 1)
   	faileval;
       unsigned int n = 0;
@@ -2072,25 +2139,13 @@ public: \
       return unit;//new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
     }
     FNewmetaball(){
-      name = "newmetaball";
+      name = "add";
     }
   } fnewmetaball;
 
-  class FNewmetametaball: public ExpParser::FValue {
+  class Fmetaballsmesh: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
-      if (parameters.size() != 0)
-  	faileval;
-      return new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
-    }
-    FNewmetametaball(){
-      name = "newmetametaball";
-    }
-  } fnewmetametaball;
-
-  class Fmetaballsmesh: public ExpParser::FValue {
-  public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(4);
       getany(Image::MetaMetaBall*,balls);
       getdouble(target);
@@ -2100,14 +2155,29 @@ public: \
       return new ValueAny<Image::MyMesh*>(mesh, mymeshtype);
     }
     Fmetaballsmesh(){
-      name = "metaballsmesh";
+      name = "mesh";
     }
   } fmetaballsmesh;
+
+  class FNewmetametaball: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      if (parameters.size() != 0)
+  	faileval;
+      ValueAny<Image::MetaMetaBall*>* result = new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
+      result->members.push_back(&fnewmetaball);
+      result->members.push_back(&fmetaballsmesh);
+      return result;
+    }
+    FNewmetametaball(){
+      name = "newmetametaball";
+    }
+  } fnewmetametaball;
 
 
   class FNewimg: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(5);
       getint(p0);
       getint(p1);
@@ -2115,7 +2185,7 @@ public: \
       getint(p3);
       getint(p4);
       CImg<unsigned char>* img = new CImg<unsigned char>(p0,p1,p2,p3,p4);
-      return new ValueAny<CImg<unsigned char>*>(img, cimguchar);
+      return newimage(img);
     }
     FNewimg(){
       name = "newimg";
@@ -2124,7 +2194,7 @@ public: \
 
   class Fwait: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(2);
       getptr(CImgDisplay,"CImgDisplay",disp);
       getint(p1);
@@ -2136,9 +2206,9 @@ public: \
     }
   } fwait;
 
-  class Fclear: public ExpParser::FValue {
+  class Fclear: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(1);
       getptr(CImg<unsigned char>,cimguchar,img);
       img->fill(0);
@@ -2149,9 +2219,9 @@ public: \
     }
   } fclear;
 
-  class Fdisplay: public ExpParser::FValue {
+  class Fdisplay: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(2);
       getptr(CImg<unsigned char>,cimguchar,img);
       getptr(CImgDisplay,"CImgDisplay",disp);
@@ -2165,36 +2235,36 @@ public: \
 
   class Floadimage: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(1);
       getany(string,p0);
       cout << "READING " << p0 << endl;;
       CImg<unsigned char>* image = new CImg<unsigned char>(CImg<unsigned char>().load(p0.data()));
       //      cout << "Done " << p0 << " " << image->spectrum() << endl;;
-      return new ValueAny<CImg<unsigned char>*>(image, cimguchar);
+      return newimage(image);
     }
     Floadimage(){
       name = "loadimage";
     }
   } floadimage;
 
-  class Fcopyimage: public ExpParser::FValue {
+  class Fcopyimage: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(1);
       getptr(CImg<unsigned char>,cimguchar,img);
       CImg<unsigned char>* image = new CImg<unsigned char>(*img);
-      return new ValueAny<CImg<unsigned char>*>(image, cimguchar);
+      return newimage(image);
     }
     Fcopyimage(){
-      name = "copyimage";
+      name = "copy";
     }
   } fcopyimage;
 
 
-  class Fresize: public ExpParser::FValue {
+  class Fresize: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(3);
       getptr(CImg<unsigned char>,cimguchar,img);
       getint(size_x);
@@ -2207,16 +2277,16 @@ public: \
 	image = new CImg<unsigned char>(img->get_resize_doubleXY());
       else
 	image = new CImg<unsigned char>(img->get_resize(size_x, size_y));
-      return new ValueAny<CImg<unsigned char>*>(image, cimguchar);
+      return newimage(image);
     }
     Fresize(){
       name = "resize";
     }
   } fresize;
 
-  class Fdrawimage: public ExpParser::FValue {
+  class Fdrawimage: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(6);
       getptr(CImg<unsigned char>,cimguchar,img);
       getptr(CImg<unsigned char>,cimguchar,image);
@@ -2236,7 +2306,7 @@ public: \
 
   class Floadmesh: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(3);
       getany(string,path);
       getptr(CImg<unsigned char>,fcolor.name,col);
@@ -2251,9 +2321,9 @@ public: \
     }
   } floadmesh;
 
-  class Fdrawmesh: public ExpParser::FValue {
+  class Fdrawmesh: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(9);
       getptr(CImg<unsigned char>,cimguchar,img);
       getptr(Image::MyMesh,mymeshtype,mesh);
@@ -2272,20 +2342,12 @@ public: \
     }
   } fdrawmesh;
 
-  class Fnewdisplay: public ExpParser::FValue {
+  class Fnewdisplay: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(1);
-
       getptr(CImg<unsigned char>,cimguchar,img);
       CImgDisplay disp(*img,"Spark");
-      // if (false)
-      // {
-      // 	Image::MyMesh* mesh = (new Image::MyMesh())->readOFF("/home/fmaurel/prog/spark/input/dino2.off");
-      // 	mesh->draw(img);
-      // 	img->display(disp);
-      // }
-     
       return new ValueAny<CImgDisplay*>(new CImgDisplay(disp), "CImgDisplay");
     }
     Fnewdisplay(){
@@ -2293,9 +2355,9 @@ public: \
     }
   } fnewdisplay;
 
-  class Frectangle: public ExpParser::FValue {
+  class Frectangle: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(7);
       getptr(CImg<unsigned char>,cimguchar,img);
       getint(p1);
@@ -2312,9 +2374,9 @@ public: \
     }
   } frectangle;
 
-  class Ftext: public ExpParser::FValue {
+  class Ftext: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       if(parameters.size() == 7){
 	check_parameters(7);
 	getptr(CImg<unsigned char>,cimguchar,img);
@@ -2347,7 +2409,7 @@ public: \
 
   class Fstring: public ExpParser::FValue {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 1)
 	faileval;
       string s = parameters[0]->tostring();
@@ -2375,9 +2437,9 @@ public: \
   }
 
 
-  class Fsavebmp: public ExpParser::FValue {
+  class Fsavebmp: public ExpParser::member<Value> {
   public:
-    Value* eval(vector<Value*> parameters){
+    Value* eval(vector<Value*>& parameters){
       check_parameters(2);
       getptr(CImg<unsigned char>,cimguchar,img);
       getint(p1);
@@ -2393,6 +2455,29 @@ public: \
       name = "savebmp";
     }
   } fsavebmp;
+
+  ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point){
+    ValueAny<Image::supportPoint*>* v = new ValueAny<Image::supportPoint*>(point, "point");
+    v->members.push_back(&flinkpoint);
+    return v;
+  }
+
+  ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point){
+    ValueAny<CImg<unsigned char>*>* v = new ValueAny<CImg<unsigned char>*>(point, "image");
+    v->members.push_back(&fdrawmesh);
+    v->members.push_back(&fsavebmp);
+    v->members.push_back(&fdisplay);
+    v->members.push_back(&fnewdisplay);
+    v->members.push_back(&frectangle);
+    v->members.push_back(&ftext);
+    v->members.push_back(&fsavebmp);
+    v->members.push_back(&fcopyimage);
+    v->members.push_back(&fdrawimage);
+    v->members.push_back(&fresize);
+    v->members.push_back(&fclear);
+    return v;
+  }
+
 }
 
 string read(string filename){
@@ -2435,27 +2520,18 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::fshow);
   env->functions.push_back(&ExpParser::fnew3d);
   env->functions.push_back(&ExpParser::fnewimg);
-  env->functions.push_back(&ExpParser::fdisplay);
-  env->functions.push_back(&ExpParser::fnewdisplay);
-  env->functions.push_back(&ExpParser::frectangle);
-  env->functions.push_back(&ExpParser::ftext);
   env->functions.push_back(&ExpParser::fwait);
-  env->functions.push_back(&ExpParser::fsavebmp);
   env->functions.push_back(&ExpParser::floadmesh);
-  env->functions.push_back(&ExpParser::fdrawmesh);
+  //  env->functions.push_back(&ExpParser::fdrawmesh);
   env->functions.push_back(&ExpParser::floadimage);
-  env->functions.push_back(&ExpParser::fcopyimage);
-  env->functions.push_back(&ExpParser::fdrawimage);
-  env->functions.push_back(&ExpParser::fresize);
-  env->functions.push_back(&ExpParser::fclear);
   env->functions.push_back(&ExpParser::fstring);
   env->functions.push_back(&ExpParser::flist_files);
   env->functions.push_back(&ExpParser::fnewpoint);
-  env->functions.push_back(&ExpParser::flinkpoint);
-  env->functions.push_back(&ExpParser::fnewmetaball);
+  //  env->functions.push_back(&ExpParser::flinkpoint);
+  //  env->functions.push_back(&ExpParser::fnewmetaball);
   env->functions.push_back(&ExpParser::fnewmetametaball);
   //  env->functions.push_back(&ExpParser::faddball);
-  env->functions.push_back(&ExpParser::fmetaballsmesh);
+  //  env->functions.push_back(&ExpParser::fmetaballsmesh);
   //  env->add("scene", new ExpParser::Value((void*)new Image::fm3d, "fm3d"));
   //  env->names.push_back("scene");
   //env->values.push_back(new ExpParser::Value((void*)"AAA", "fm3d"));
