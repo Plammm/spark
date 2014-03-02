@@ -85,21 +85,29 @@ var play_happy () =
   // balls.addball(2, -7, 0, 2 * radius, threshold);
 
   var mesh = balls.metaballsmesh(0.5, 25, 1000);
-  //  show(mesh);
   rotate(mesh, - 250, 5.4, 20);
+
+  clear(img);
 
   //  set mesh = balls.metaballsmesh(20, 400);
   //  show(mesh);
   var show_video(directory) =
     {
       var files = list_files(directory);
+      var ancre = loadimage("input/ancre2.gif");
+      drawimage(img, ancre, 700, 0, 1, 1);
+      var frame = 0;
       for(file in files)
 	{
-	  var image = loadimage(file);
-	  var small = image.resize(-20, -20);
-	  drawimage(img, small, 100, 200, 1, 0);
-	  drawimage(img, small, 500, 200, 0.2, 0);
-	  snapshot();
+	  set frame = 1 + frame;
+	  if(not(frame % speed)){
+	    var image = loadimage(file);
+	    var small = image.resize(-20, -20);
+	    drawimage(img, small, 100, 200, 1, 0);
+	    drawimage(img, small, 500, 200, 0.2, 0);
+	    snapshot();
+	  }
+	  else;
 	}
     }
 

@@ -536,7 +536,7 @@ namespace ExpParser
     tokenType type;
   };
 
-  string ops = "+-*/=";
+  string ops = "+-*/=%";
   string intchars = "-0123456789";
   string doublechars = "-0123456789.";
 
@@ -1435,9 +1435,10 @@ namespace ExpParser
   Parser* parseTimes = new ParserBinOps("*/", parseApp);
   Parser* parsePlus = new ParserBinOps("+-", parseTimes);
   Parser* parseUMinus = new ParserUnaryOps("-", parsePlus);
+  Parser* parseMod = new ParserBinOps("%", parseUMinus);
 
   unique_ptr<Expr> parse(string s, int& nextPos){
-    return parseUMinus->parse(s, nextPos);
+    return parseMod->parse(s, nextPos);
   }
 
   unique_ptr<Expr> parse(string s){
@@ -1805,6 +1806,31 @@ namespace ExpParser
       name = "-";
     }
   } fminus;
+
+  class FMod: public FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      check_parameters(2);
+      getint(p1);
+      getint(p2);
+      return new ValueAny<int>(p1 % p2);
+    }
+    FMod(){
+      name = "%";
+    }
+  } fmod;
+
+  class FNot: public FValue {
+  public:
+    Value* eval(vector<Value*> parameters){
+      check_parameters(1);
+      getint(p1);
+      return new ValueAny<int>(p1 == 0 ? 1 : 0);
+    }
+    FNot(){
+      name = "not";
+    }
+  } fnot;
 
 #define binop(classname,fname,sname,op) class classname: public FValue { \
 public: \
@@ -2405,9 +2431,6 @@ public: \
       name = "savebmp";
     }
   } fsavebmp;
-
-
-
 }
 
 string read(string filename){
@@ -2442,6 +2465,8 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::fminus);
   env->functions.push_back(&ExpParser::ftimes);
   env->functions.push_back(&ExpParser::fdiv);
+  env->functions.push_back(&ExpParser::fnot);
+  env->functions.push_back(&ExpParser::fmod);
   env->functions.push_back(&ExpParser::fcolor);
   env->functions.push_back(&ExpParser::fplane);
   env->functions.push_back(&ExpParser::fhplane);
