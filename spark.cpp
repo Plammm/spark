@@ -1935,6 +1935,7 @@ public: \
 
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point);
   ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point);
+  ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point);
 
 
   class FColor: public ExpParser::FValue {
@@ -2018,7 +2019,7 @@ public: \
     }
   } flist_files;
 
-  class FPlane: public ExpParser::FValue {
+  class FPlane: public ExpParser::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(10);
@@ -2041,7 +2042,7 @@ public: \
     }
   } fplane;
 
-  class FHPlane: public ExpParser::FValue {
+  class FHPlane: public ExpParser::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(10);
@@ -2064,7 +2065,7 @@ public: \
     }
   } fhplane;
 
-  class FShow: public ExpParser::FValue {
+  class FShow: public ExpParser::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
@@ -2077,17 +2078,17 @@ public: \
     }
   } fshow;
 
-  class FNew3d: public ExpParser::FValue {
+  class FNewmesh: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 0)
   	faileval;
-      return new ValueAny<Image::MyMesh*>(new Image::MyMesh, mymeshtype);
+      return newmesh(new Image::MyMesh);
     }
-    FNew3d(){
-      name = "new3d";
+    FNewmesh(){
+      name = "newmesh";
     }
-  } fnew3d;
+  } fnewmesh;
  
   class FLinkpoint: public ExpParser::member<Value> {
   public:
@@ -2152,7 +2153,7 @@ public: \
       getdouble(r);
       getint(sub);
       Image::MyMesh* mesh = balls->mesh(target, r, sub);
-      return new ValueAny<Image::MyMesh*>(mesh, mymeshtype);
+      return newmesh(mesh);
     }
     Fmetaballsmesh(){
       name = "mesh";
@@ -2192,7 +2193,7 @@ public: \
     }
   } fnewimg;
 
-  class Fwait: public ExpParser::FValue {
+  class Fwait: public ExpParser::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
@@ -2314,7 +2315,7 @@ public: \
       cout << "READING " << path << endl;;
       Image::MyMesh* mesh = (new Image::MyMesh())->readOFF(path, *col, opacity);
       //      cout << "Done " << path << endl;;
-      return new ValueAny<Image::MyMesh*>(mesh, mymeshtype);
+      return newmesh(mesh);
     }
     Floadmesh(){
       name = "loadmesh";
@@ -2348,7 +2349,9 @@ public: \
       check_parameters(1);
       getptr(CImg<unsigned char>,cimguchar,img);
       CImgDisplay disp(*img,"Spark");
-      return new ValueAny<CImgDisplay*>(new CImgDisplay(disp), "CImgDisplay");
+      auto result = new ValueAny<CImgDisplay*>(new CImgDisplay(disp), "CImgDisplay");
+      result->members.push_back(&fwait);
+      return result;
     }
     Fnewdisplay(){
       name = "newdisplay";
@@ -2462,6 +2465,14 @@ public: \
     return v;
   }
 
+  ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point){
+    ValueAny<Image::MyMesh*>* v = new ValueAny<Image::MyMesh*>(point, "point");
+    v->members.push_back(&fplane);
+    v->members.push_back(&fhplane);
+    v->members.push_back(&fshow);
+    return v;
+  }
+
   ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point){
     ValueAny<CImg<unsigned char>*>* v = new ValueAny<CImg<unsigned char>*>(point, "image");
     v->members.push_back(&fdrawmesh);
@@ -2514,27 +2525,16 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::fdiv);
   env->functions.push_back(&ExpParser::fnot);
   env->functions.push_back(&ExpParser::fmod);
+
   env->functions.push_back(&ExpParser::fcolor);
-  env->functions.push_back(&ExpParser::fplane);
-  env->functions.push_back(&ExpParser::fhplane);
-  env->functions.push_back(&ExpParser::fshow);
-  env->functions.push_back(&ExpParser::fnew3d);
   env->functions.push_back(&ExpParser::fnewimg);
-  env->functions.push_back(&ExpParser::fwait);
   env->functions.push_back(&ExpParser::floadmesh);
-  //  env->functions.push_back(&ExpParser::fdrawmesh);
+  env->functions.push_back(&ExpParser::fnewmesh);
   env->functions.push_back(&ExpParser::floadimage);
   env->functions.push_back(&ExpParser::fstring);
   env->functions.push_back(&ExpParser::flist_files);
   env->functions.push_back(&ExpParser::fnewpoint);
-  //  env->functions.push_back(&ExpParser::flinkpoint);
-  //  env->functions.push_back(&ExpParser::fnewmetaball);
   env->functions.push_back(&ExpParser::fnewmetametaball);
-  //  env->functions.push_back(&ExpParser::faddball);
-  //  env->functions.push_back(&ExpParser::fmetaballsmesh);
-  //  env->add("scene", new ExpParser::Value((void*)new Image::fm3d, "fm3d"));
-  //  env->names.push_back("scene");
-  //env->values.push_back(new ExpParser::Value((void*)"AAA", "fm3d"));
   
   unique_ptr<ExpParser::Block> scenes(new ExpParser::Block);
   string readopt = "-s";

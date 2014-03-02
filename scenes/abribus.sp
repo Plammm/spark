@@ -13,34 +13,34 @@ var play_abribus() =
   var streetit(rue) =
   {
     for (i in seq (1, 9))
-      hplane(rue, 4000, 60, 10, 10, 0, 0, 50 * (i + 9), color(150, 170, 150), 0.9);
+      rue.hplane(4000, 60, 10, 10, 0, 0, 50 * (i + 9), color(150, 170, 150), 0.9);
     for (i in seq (0, 9))
-      hplane(rue, 4000, 60, 10, 10, 0, 0, 50 * i, grey(255 - 8 * i), 0.9);
+      rue.hplane(4000, 60, 10, 10, 0, 0, 50 * i, grey(255 - 8 * i), 0.9);
     for (i in seq (1, 9))
-      hplane(rue, 4000, 60, 10, 10, 0, 0, -50 * i, color(150, 170, 150), 0.9);
+      rue.hplane(4000, 60, 10, 10, 0, 0, -50 * i, color(150, 170, 150), 0.9);
     for (i in seq (0, 9))
-      hplane(rue, 200, 40, 10, 10, 300 * i, -100, 100, white, 0.9);
+      rue.hplane(200, 40, 10, 10, 300 * i, -100, 100, white, 0.9);
   }
 
   var abribusit(abribus, x, y, z) =
   {
     var subd = 1;
-    plane(abribus, 260, 25, subd, subd, x, y -200, z, brown, 0.9);
-    plane(abribus, 20, 150, subd, subd, x, y -175, z, brown, 0.9);
-    plane(abribus, 20, 150, subd, subd, x + 120, y -175, z, brown, 0.9);
-    plane(abribus, 20, 150, subd, subd, x + 240, y -175, z, brown, 0.9);
-    plane(abribus, 260, 25, subd, subd, x, y -25, z, brown, 0.9);
+    abribus.plane(260, 25, subd, subd, x, y -200, z, brown, 0.9);
+    abribus.plane(20, 150, subd, subd, x, y -175, z, brown, 0.9);
+    abribus.plane(20, 150, subd, subd, x + 120, y -175, z, brown, 0.9);
+    abribus.plane(20, 150, subd, subd, x + 240, y -175, z, brown, 0.9);
+    abribus.plane(260, 25, subd, subd, x, y -25, z, brown, 0.9);
 
-    plane(abribus, 100, 150, subd, subd, x + 20, y -175, z, grey(200), 0.9);
-    plane(abribus, 100, 150, subd, subd, x + 140, y -175, z, grey(200), 0.9);
-    hplane(abribus, 260, 195, subd, subd, x, y -200, z - 200, brown, 0.9);
+    abribus.plane(100, 150, subd, subd, x + 20, y -175, z, grey(200), 0.9);
+    abribus.plane(100, 150, subd, subd, x + 140, y -175, z, grey(200), 0.9);
+    abribus.hplane(260, 195, subd, subd, x, y -200, z - 200, brown, 0.9);
   }
 
   {
     var road = color(200, 200, 200);
-    var rue = new3d();
+    var rue = newmesh();
     streetit(rue);
-    var abribus = new3d();
+    var abribus = newmesh();
     abribusit(abribus, 0, 0, 700);
 
     store();

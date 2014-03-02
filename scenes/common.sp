@@ -9,7 +9,7 @@ var waitlength = 1000.0 / rate;
 var snapshot() =
 {
   img.display(disp);
-  wait(disp, waitlength);
+  disp.wait(waitlength);
   img.savebmp(imageid);
   set imageid = imageid + 1;
 };
