@@ -21,17 +21,13 @@ var play_happy () =
   var pt_righthip = pt_thigh.linkPoint(1, 1, 0);
   var pt_rightknee = pt_righthip.linkPoint(1, 4, 0);
   var pt_righttoe = pt_rightknee.linkPoint(1, 4, 0);
-  
-  balls.newmetaball(1, 10.5, green, pt_head, pt_neck, pt_plexus);
-  balls.newmetaball(1, 10.5, green, pt_neck, pt_plexus, pt_leftshoulder, pt_leftelbow, pt_leftarm);
-  balls.newmetaball(1, 10.5, green, pt_neck, pt_plexus, pt_rightshoulder, pt_rightelbow, pt_rightarm);
 
+  balls.newmetaball(1, 10.5, grey(200), pt_head, pt_neck, pt_plexus);
+  balls.newmetaball(1, 10.5, brown, pt_neck, pt_plexus, pt_leftshoulder, pt_leftelbow, pt_leftarm);
+  balls.newmetaball(1, 10.5, brown, pt_neck, pt_plexus, pt_rightshoulder, pt_rightelbow, pt_rightarm);
   balls.newmetaball(1.5, 10.5, red, pt_plexus, pt_thigh, pt_leftshoulder, pt_rightshoulder);
-
   balls.newmetaball(1.5, 10.5, blue, pt_plexus, pt_thigh, pt_lefthip, pt_leftknee);
   balls.newmetaball(1.5, 10.5, blue, pt_lefthip, pt_leftknee, pt_lefttoe);
-
-  //  balls.newmetaball(1.5, 10.5, blue, pt_plexus, pt_thigh, pt_rightshoulder, pt_rightshoulder);
   balls.newmetaball(1.5, 10.5, blue, pt_plexus, pt_thigh, pt_righthip, pt_rightknee);
   balls.newmetaball(1.5, 10.5, blue, pt_righthip, pt_rightknee, pt_righttoe);
 
