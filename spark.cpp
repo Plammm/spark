@@ -391,7 +391,7 @@ namespace Image
       return result;
     }
     void translate(float dx, float dy, float dz){
-      x += x;
+      x += dx;
       y += dy;
       z += dz;
       for(unsigned int i = 0; i < links.size(); i++)
@@ -1936,7 +1936,7 @@ public: \
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point);
   ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point);
   ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point);
-
+  ValueAny<vector<Value*>*>* newvector(vector<Value*>* point);
 
   class FColor: public ExpParser::FValue {
   public:
@@ -2104,6 +2104,22 @@ public: \
       name = "link";
     }
   } flinkpoint;
+
+  class FTranslatepoint: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(4);
+      getany(Image::supportPoint*,point);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      point->translate(x, y, z);
+      return unit;
+    }
+    FTranslatepoint(){
+      name = "translate";
+    }
+  } ftranslatepoint;
 
   class FNewpoint: public ExpParser::FValue {
   public:
@@ -2459,9 +2475,85 @@ public: \
     }
   } fsavebmp;
 
+  class Fget: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(2);
+      getany(vector<Value*>*, v);
+      getint(p);
+      return (*v)[p];
+    }
+    Fget(){
+      name = "get";
+    }
+  } fget;
+
+  class Fset: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(2);
+      getany(vector<Value*>*, v);
+      getint(p);
+      (*v)[p] = parameters[2];
+      return unit;
+    }
+    Fset(){
+      name = "set";
+    }
+  } fset;
+
+  class Fpush: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(2);
+      getany(vector<Value*>*, v);
+      v->push_back(parameters[1]);
+      return unit;
+    }
+    Fpush(){
+      name = "push";
+    }
+  } fpush;
+
+  class Fnewvector: public ExpParser::FValue {
+  private:
+    vector<Value*> values;
+  public:
+    Value* eval(vector<Value*>& parameters){
+      auto result = new vector<Value*>;
+      for (unsigned int i = 0; i < parameters.size(); i++)
+	result->push_back(parameters[i]);
+      return newvector(result);
+    }
+    Fnewvector(){
+      name = "newvector";
+    }
+  } fnewvector;
+
+  class Fmemoize: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(2);
+      getptr(CImg<unsigned char>,cimguchar,img);
+      getint(p1);
+      //      getptr(CImg<unsigned char>,fcolor.name,p5);
+      string s = boost::lexical_cast<std::string>(p1);
+      string s0 = "000000";
+      s0.resize(6 - s.size());
+      string filename = "/home/fmaurel/prog/spark/output/image" + s0 + s + ".bmp";
+      img->save_bmp(filename.data());
+      return unit;
+    }
+    Fmemoize(){
+      name = "memoize";
+    }
+  } fmemoize;
+
+
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point){
     ValueAny<Image::supportPoint*>* v = new ValueAny<Image::supportPoint*>(point, "point");
     v->members.push_back(&flinkpoint);
+    v->members.push_back(&ftranslatepoint);
     return v;
   }
 
@@ -2489,6 +2581,13 @@ public: \
     return v;
   }
 
+  ValueAny<vector<Value*>*>* newvector(vector<Value*>* point){
+    ValueAny<vector<Value*>*>* v = new ValueAny<vector<Value*>*>(point, "array");
+    v->members.push_back(&fget);
+    v->members.push_back(&fset);
+    v->members.push_back(&fpush);
+    return v;
+  }
 }
 
 string read(string filename){
@@ -2528,6 +2627,7 @@ int main(int argc, char **argv) {
 
   env->functions.push_back(&ExpParser::fcolor);
   env->functions.push_back(&ExpParser::fnewimg);
+  env->functions.push_back(&ExpParser::fnewvector);
   env->functions.push_back(&ExpParser::floadmesh);
   env->functions.push_back(&ExpParser::fnewmesh);
   env->functions.push_back(&ExpParser::floadimage);

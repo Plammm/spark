@@ -18,7 +18,7 @@ var play_abribus() =
       rue.hplane(4000, 60, 10, 10, 0, 0, 50 * i, grey(255 - 8 * i), 0.9);
     for (i in seq (1, 9))
       rue.hplane(4000, 60, 10, 10, 0, 0, -50 * i, color(150, 170, 150), 0.9);
-    for (i in seq (0, 9))
+    for (i in seq (0, 20))
       rue.hplane(200, 40, 10, 10, 300 * i, -100, 100, white, 0.9);
   }
 
@@ -37,6 +37,9 @@ var play_abribus() =
   }
 
   {
+    var walk_matthieu = newvector();
+    fill_matthieu(walk_matthieu);
+
     var road = color(200, 200, 200);
     var rue = newmesh();
     streetit(rue);
@@ -44,7 +47,7 @@ var play_abribus() =
     abribusit(abribus, 0, 0, 700);
 
     store();
-    var imgfif2 = loadimage("/home/fmaurel/prog/spark/input/fif2.jpg");
+    //    var imgfif2 = loadimage("/home/fmaurel/prog/spark/input/fif2.jpg");
 
     var deltax = -10;
     var deltay = 2.6;
@@ -95,27 +98,47 @@ var play_abribus() =
     for (time in seq (0, speed, maxtime)){
       restore();
       showrue(time, 1);
-      img.drawimage(imgfif2, - deltax * (time / 5.0), 550 - (deltay * (time / 5.0)), 1, 0);
-      snapshot();
-      //stay(0.1);
-    }
-
-    //    clear(img);
-    //    showrue(maxtime, 0);
-    store();
-    for (time in seq (0, speed, 50)){
-      img.clear();
-      img.drawimage(storedimage, 0, 0, 1 - time / 50., 0);
-      showabribus(maxtime, 0);
+      var dx = 1.5 * time;
+      var dy = dx * deltay / deltax;
+      img.drawmesh(walk_matthieu.get(time % 16), 350 + dx, 700 + dy, -600, -0.5, 2.1, 0, 700);
       snapshot();
     }
 
-    store();
-    for (time in seq (0, speed, 50)){
-      img.clear();
-      //      drawimage(img, storedimage, 0, 0, 1 - time / 50., 0);
-      showabribus(maxtime, time / 50.);
-      snapshot();
+    var crosstime = 100;
+    {
+      var dx = 0;
+      var dy = 0;
+      var dx2 = 0;
+      var dy2 = 0;
+      for (time in seq (maxtime + 1, speed, maxtime + crosstime)){
+	restore();
+	showrue(maxtime, 1);
+	set dx = 1.5 * maxtime;
+	set dy = dx * deltay / deltax;
+	set dx2 = - 1.5 * (time - maxtime);
+	set dy2 = dx2 * 2.3;
+	img.drawmesh(walk_matthieu.get(time % 16), 350 + (dx + dx2), 700 + (dy + dy2), -600, -0.5, 3.9, 0, 700);
+	snapshot();
+      }
+
+      //    clear(img);
+      //    showrue(maxtime, 0);
+      store();
+      for (time in seq (0, speed, 50)){
+	img.clear();
+	img.drawimage(storedimage, 0, 0, 1 - time / 50., 0);
+	showabribus(maxtime, 0);
+	img.drawmesh(walk_matthieu.get(0), 350 + (dx + dx2), 700 + (dy + dy2), -600, -0.5, 3.9, 0, 700);
+	snapshot();
+      }
+
+      store();
+      for (time in seq (0, speed, 50)){
+	img.clear();
+	//      drawimage(img, storedimage, 0, 0, 1 - time / 50., 0);
+	showabribus(maxtime, time / 50.);
+	snapshot();
+      }
     }
 
     stay(2);

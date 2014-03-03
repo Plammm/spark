@@ -6,7 +6,7 @@
 .phony:all e vid cleanoutput show backup publish
 
 all: spark
-	./spark -s scenes/common.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
+	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
 
 fast: spark
 	./spark -s scenes/common.sp -e 'set waitlength = 0;' -s scenes/scene.sp
@@ -15,7 +15,7 @@ dino: spark
 	./spark -s scenes/common.sp -s scenes/dino.sp -e "play_dino();"
 
 abribus: spark
-	./spark -s scenes/common.sp -s scenes/abribus.sp -e "play_abribus();"
+	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -e "play_abribus();"
 
 happy: spark
 	./spark -s scenes/common.sp -s scenes/happy.sp -e "play_happy();"
@@ -32,7 +32,8 @@ cleanoutput:
 vid:
 	rm -f output/out*.mp4
 	ffmpeg -r 25 -pattern_type glob -i 'output/image*.bmp' -c:v libx264 output/out1.mp4 
-	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy -shortest output/out.mp4 
+	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy output/out.mp4
+#	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy -shortest output/out.mp4
 
 vidtoimages:
 	mkdir -p videoextracts/testvideoiphone
