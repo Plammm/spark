@@ -60,7 +60,7 @@ var play_abribus() =
 
       //      img.drawmesh(abribus, (1 - lambda) * i * deltax - lambda * 2300, (700 + i * deltay) * (1 - lambda) + lambda * 400, 0, -0.5 * (1 - lambda), 0.5 * (1 - lambda), 0, 40000);
 
-      img.drawmesh(abribus, 2500 + (1 - lambda) * i * deltax - lambda * 2300, (80 + i * deltay) * (1 - lambda) + lambda * 700, -lambda * 25000, -0.5 * (1 - lambda), 0.5 * (1 - lambda), 0, 40000);
+      img.drawmesh(abribus, 2500 + (1 - lambda * lambda) * i * deltax - lambda * lambda * 2300, (80 + i * deltay) * (1 - lambda) + lambda * 700, -lambda * 25000, -0.5 * (1 - lambda), 0.5 * (1 - lambda), 0, 40000);
     }
 
     var showrue(time, withabribus) =
@@ -73,10 +73,10 @@ var play_abribus() =
       img.drawimage(mysterymachine, -deltax * (i * 3), 430 - (deltay * i) * 3, 1, 1);
 
       set i = time / 2.0;
-      img.drawimage(rat1small, 400 + deltax * (i - 100), 550 + deltay * (i - 100), 1, 1);
-      img.drawimage(rat1small, 400 + deltax * (i - 150), 630 + deltay * (i - 150), 1, 1);
-      img.drawimage(rat1small, 400 + deltax * (i - 180), 600 + deltay * (i - 180), 1, 1);
-      img.drawimage(rat1small, 400 + deltax * (i - 240), 650 + deltay * (i - 240), 1, 1);
+      img.drawimage(rat1smallsmall, 400 + deltax * (i - 100), 780 + deltay * (i - 100), 1, 1);
+      img.drawimage(rat1smallsmall, 400 + deltax * (i - 150), 720 + deltay * (i - 150), 1, 1);
+      img.drawimage(rat1smallsmall, 400 + deltax * (i - 180), 650 + deltay * (i - 180), 1, 1);
+      img.drawimage(rat1smallsmall, 400 + deltax * (i - 240), 720 + deltay * (i - 240), 1, 1);
 
       img.drawimage(rat1small, 400 + deltax * (i - 10), 230 + deltay * (i - 10), 1, 1);
 
@@ -132,11 +132,15 @@ var play_abribus() =
 	snapshot();
       }
 
+      var bary(x, y, l) = x * (1 - l) + y * l;
+
       store();
       for (time in seq (0, speed, 50)){
 	img.clear();
 	//      drawimage(img, storedimage, 0, 0, 1 - time / 50., 0);
 	showabribus(maxtime, time / 50.);
+
+	img.drawmesh(walk_matthieu.get(0), bary(350 + (dx + dx2), 800, time / 50.), bary(700 + (dy + dy2), 600, time / 50.), bary(-600, -650, time / 50.), -0.5, 3.9, 0, 700);
 	snapshot();
       }
     }

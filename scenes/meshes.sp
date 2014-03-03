@@ -8,12 +8,12 @@ var fill_matthieu(walk) =
   var pt_thigh = pt_plexus.link(0, 5, 0);
 
   var pt_leftshoulder = pt_plexus.link(-2, 1.5, 0);
-  var pt_leftelbow = pt_leftshoulder.link(-2, 2, 0);
-  var pt_leftarm = pt_leftelbow.link(-2, 2, 0);
+  var pt_leftelbow = pt_leftshoulder.link(-1, 2, 0);
+  var pt_leftarm = pt_leftelbow.link(-1, 2, 0);
 
   var pt_rightshoulder = pt_plexus.link(2, 1.5, 0);
-  var pt_rightelbow = pt_rightshoulder.link(2, 2, 0);
-  var pt_rightarm = pt_rightelbow.link(2, 2, 0);
+  var pt_rightelbow = pt_rightshoulder.link(1, 2, 0);
+  var pt_rightarm = pt_rightelbow.link(1, 2, 0);
 
   var pt_lefthip = pt_thigh.link(-1, 1, 0);
   var pt_leftknee = pt_lefthip.link(-0.5, 4, 0);
@@ -37,6 +37,8 @@ var fill_matthieu(walk) =
   {
     pt_leftknee.translate(0, 0, -depth);
     pt_rightknee.translate(0, 0, depth);
+    pt_leftshoulder.translate(0, 0, depth/3);
+    pt_rightshoulder.translate(0, 0, -depth/3);
     vector.push(balls.mesh(0.5, 25, 100));
   }
 

@@ -27,12 +27,18 @@ spark: spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
 	g++ -g -o spark spark.cpp  -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
 
 cleanoutput:
-	rm -f output/image*.bmp output/*.mp3
+	rm -f output/image*.bmp output/*.mp3 output/out*.mp4
 
-vid:
-	rm -f output/out*.mp4
-	ffmpeg -r 25 -pattern_type glob -i 'output/image*.bmp' -c:v libx264 output/out1.mp4 
-	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy output/out.mp4
+vidonly:
+	rm -f output/out1.mp4
+	ffmpeg -r 25 -pattern_type glob -i 'output/image*.bmp' -c:v libx264 output/out1.mp4
+
+vidaudio:
+	rm -f output/out.mp4
+	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec:a aac -strict experimental -b:a 192k -shortest output/out.mp4
+
+vid:	vidonly vidaudio
+#	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy output/out.mp4
 #	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy -shortest output/out.mp4
 
 vidtoimages:
