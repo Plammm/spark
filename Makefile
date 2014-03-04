@@ -26,7 +26,7 @@ e:
 spunk.o: spunk.cpp
 	g++ -g -c spunk.cpp  -Wall -W -Wsign-compare -ansi -pedantic   -lboost_system -lboost_filesystem -std=c++11
 
-spark: spunk.o spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
+spark: spunk.hpp spunk.o spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
 	g++ -g -o spark spunk.o spark.cpp -I. -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
 
 cleanoutput:

@@ -25,7 +25,7 @@ using namespace std;
 #define getdouble(v) ValueAny<double>* v ## ddd = doubleValue(parameters[n]); if (v ## ddd == 0) faileval; double v = v ## ddd->value; n++;
 #define getint(v) ValueAny<int>* v ## ddd = intValue(parameters[n]); if (v ## ddd == 0) faileval; int v = v ## ddd->value; n++;
 
-namespace ExpParser
+namespace Spunk
 {
   // void handler(int sig) {
 
@@ -1414,7 +1414,7 @@ public: \
 
   ValueAny<vector<Value*>*>* newvector(vector<Value*>* point);
 
-  class Fstring: public ExpParser::FValue {
+  class Fstring: public FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 1)
@@ -1427,7 +1427,7 @@ public: \
     }
   } fstring;
 
-  class FSeq: public ExpParser::FValue {
+  class FSeq: public FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       int start, step, stop;
@@ -1457,7 +1457,7 @@ public: \
     }
   } fseq;
 
-  class FList_Files: public ExpParser::FValue {
+  class FList_Files: public FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       //int start, step, stop;
@@ -1493,7 +1493,7 @@ public: \
   } flist_files;
 
 
-  class Fget: public ExpParser::member<Value> {
+  class Fget: public member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
@@ -1506,7 +1506,7 @@ public: \
     }
   } fget;
 
-  class Fset: public ExpParser::member<Value> {
+  class Fset: public member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
@@ -1520,7 +1520,7 @@ public: \
     }
   } fset;
 
-  class Fpush: public ExpParser::member<Value> {
+  class Fpush: public member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
@@ -1541,7 +1541,7 @@ public: \
     return v;
   }
 
-  class Fnewvector: public ExpParser::FValue {
+  class Fnewvector: public FValue {
   private:
     vector<Value*> values;
   public:
@@ -1564,7 +1564,7 @@ public: \
     env->functions.push_back(&ftimes);
     env->functions.push_back(&fdiv);
     env->functions.push_back(&fnot);
-    env->functions.push_back(&ExpParser::fmod);
+    env->functions.push_back(&fmod);
     env->functions.push_back(&fnewvector);
     env->functions.push_back(&fstring);
     env->functions.push_back(&flist_files);
@@ -1587,8 +1587,8 @@ public: \
     return s;
   }
 
-  unique_ptr<ExpParser::Expr> load(int argc, char** argv){
-    unique_ptr<ExpParser::Block> scenes(new ExpParser::Block);
+  unique_ptr<Expr> load(int argc, char** argv){
+    unique_ptr<Block> scenes(new Block);
     string readopt = "-s";
     string evalopt = "-e";
 
@@ -1600,10 +1600,10 @@ public: \
 	s = argv[2 * i + 2];
       else{
 	cout << "-s <file> | -e <expr>" << endl;
-	throw new ExpParser::EvalException();
+	throw new EvalException();
       }
 
-      unique_ptr<ExpParser::Block> c = ExpParser::parseCommands(s);
+      unique_ptr<Block> c = parseCommands(s);
       for(unsigned int j = 0; j < c->commands.size(); j++)
 	scenes->commands.push_back(c->commands[j]->copy());
     }

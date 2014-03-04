@@ -366,13 +366,13 @@ namespace Image
 }
 
 namespace Spark {
-  using namespace ExpParser;
+  using namespace Spunk;
 
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point);
   ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point);
   ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point);
 
-  class FColor: public ExpParser::FValue {
+  class FColor: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(3);
@@ -388,7 +388,7 @@ namespace Spark {
     }
   } fcolor;
 
-  class FPlane: public ExpParser::member<Value> {
+  class FPlane: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(10);
@@ -412,7 +412,7 @@ namespace Spark {
   } fplane;
 
 
-  class FImageplane: public ExpParser::member<Value> {
+  class FImageplane: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(8);
@@ -434,7 +434,7 @@ namespace Spark {
     }
   } fimageplane;
 
-  class FHPlane: public ExpParser::member<Value> {
+  class FHPlane: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(10);
@@ -457,7 +457,7 @@ namespace Spark {
     }
   } fhplane;
 
-  class FShow: public ExpParser::member<Value> {
+  class FShow: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
@@ -470,7 +470,7 @@ namespace Spark {
     }
   } fshow;
 
-  class FNewmesh: public ExpParser::FValue {
+  class FNewmesh: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 0)
@@ -482,7 +482,7 @@ namespace Spark {
     }
   } fnewmesh;
 
-  class FLinkpoint: public ExpParser::member<Value> {
+  class FLinkpoint: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(4);
@@ -497,7 +497,7 @@ namespace Spark {
     }
   } flinkpoint;
 
-  class FTranslatepoint: public ExpParser::member<Value> {
+  class FTranslatepoint: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(4);
@@ -513,7 +513,7 @@ namespace Spark {
     }
   } ftranslatepoint;
 
-  class FNewpoint: public ExpParser::FValue {
+  class FNewpoint: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(3);
@@ -528,7 +528,7 @@ namespace Spark {
   } fnewpoint;
 
 
-  class FNewmetaball: public ExpParser::member<Value> {
+  class FNewmetaball: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() <= 1)
@@ -552,7 +552,7 @@ namespace Spark {
     }
   } fnewmetaball;
 
-  class Fmetaballsmesh: public ExpParser::member<Value> {
+  class Fmetaballsmesh: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(4);
@@ -568,7 +568,7 @@ namespace Spark {
     }
   } fmetaballsmesh;
 
-  class FNewmetametaball: public ExpParser::FValue {
+  class FNewmetametaball: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 0)
@@ -584,7 +584,7 @@ namespace Spark {
   } fnewmetametaball;
 
 
-  class FNewimg: public ExpParser::FValue {
+  class FNewimg: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(5);
@@ -601,7 +601,7 @@ namespace Spark {
     }
   } fnewimg;
 
-  class Fwait: public ExpParser::member<Value> {
+  class Fwait: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
@@ -615,7 +615,7 @@ namespace Spark {
     }
   } fwait;
 
-  class Fclear: public ExpParser::member<Value> {
+  class Fclear: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
@@ -628,7 +628,7 @@ namespace Spark {
     }
   } fclear;
 
-  class Fdisplay: public ExpParser::member<Value> {
+  class Fdisplay: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
@@ -642,7 +642,7 @@ namespace Spark {
     }
   } fdisplay;
 
-  class Floadimage: public ExpParser::FValue {
+  class Floadimage: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
@@ -657,7 +657,7 @@ namespace Spark {
     }
   } floadimage;
 
-  class Fcopyimage: public ExpParser::member<Value> {
+  class Fcopyimage: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
@@ -671,7 +671,7 @@ namespace Spark {
   } fcopyimage;
 
 
-  class Fresize: public ExpParser::member<Value> {
+  class Fresize: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(3);
@@ -693,7 +693,7 @@ namespace Spark {
     }
   } fresize;
 
-  class Fdrawimage: public ExpParser::member<Value> {
+  class Fdrawimage: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(6);
@@ -713,7 +713,7 @@ namespace Spark {
     }
   } fdrawimage;
 
-  class Floadmesh: public ExpParser::FValue {
+  class Floadmesh: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(3);
@@ -730,7 +730,7 @@ namespace Spark {
     }
   } floadmesh;
 
-  class Fdrawmesh: public ExpParser::member<Value> {
+  class Fdrawmesh: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(9);
@@ -751,7 +751,7 @@ namespace Spark {
     }
   } fdrawmesh;
 
-  class Fnewdisplay: public ExpParser::member<Value> {
+  class Fnewdisplay: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
@@ -766,7 +766,7 @@ namespace Spark {
     }
   } fnewdisplay;
 
-  class Frectangle: public ExpParser::member<Value> {
+  class Frectangle: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(7);
@@ -785,7 +785,7 @@ namespace Spark {
     }
   } frectangle;
 
-  class Ftext: public ExpParser::member<Value> {
+  class Ftext: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       if(parameters.size() == 7){
@@ -818,7 +818,7 @@ namespace Spark {
     }
   } ftext;
 
-  class Fsavebmp: public ExpParser::member<Value> {
+  class Fsavebmp: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
@@ -838,7 +838,7 @@ namespace Spark {
   } fsavebmp;
 
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point){
-    ExpParser::ValueAny<Image::supportPoint*>* v = new ExpParser::ValueAny<Image::supportPoint*>(point, "point");
+    Spunk::ValueAny<Image::supportPoint*>* v = new Spunk::ValueAny<Image::supportPoint*>(point, "point");
     v->members.push_back(&flinkpoint);
     v->members.push_back(&ftranslatepoint);
     return v;
@@ -886,7 +886,7 @@ int main(int argc, char **argv) {
   auto env = Spark::env();
 
   here;
-  unique_ptr<ExpParser::Expr> e = ExpParser::load(argc, argv);
+  unique_ptr<Spunk::Expr> e = Spunk::load(argc, argv);
   e->eval(*env);
   return 0;
 }

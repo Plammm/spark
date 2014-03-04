@@ -1,4 +1,4 @@
-namespace ExpParser {
+namespace Spunk {
 
   using namespace std;
 
@@ -32,7 +32,6 @@ namespace ExpParser {
     T value;
     string s;
   public:
-    //    Kind kind;
     ValueAny(T v, string pp){
       value = v;
       s = pp;
@@ -79,5 +78,5 @@ namespace ExpParser {
     virtual string tostring()=0;
   };
 
-  unique_ptr<ExpParser::Expr> load(int argc, char **argv);
+  unique_ptr<Expr> load(int argc, char **argv);
 }
