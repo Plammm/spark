@@ -40,11 +40,11 @@
 
 using namespace std;
 using namespace cimg_library;
-//using namespace boost::filesystem; 
+//using namespace boost::filesystem;
 
 
 void handler(int sig) {
-  
+
   void *array[10];
   size_t size;
 
@@ -55,7 +55,7 @@ void handler(int sig) {
   fprintf(stderr, "Error: signal %d:\n", sig);
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   //string[] messages = backtrace_symbols(array, size);
-  
+
   //exit(1);
 }
 
@@ -69,38 +69,38 @@ namespace Image
   //           std::vector < glm::vec2 > & out_uvs,
   //           std::vector < glm::vec3 > & out_normals
   //           )
-  // {  
+  // {
   //   std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
   //   std::vector< glm::vec3 > temp_vertices;
   //   std::vector< glm::vec2 > temp_uvs;
   //   std::vector< glm::vec3 > temp_normals;
-        
+
   //   FILE * file = fopen(path, "r");
   //   if( file == NULL ){
   //     printf("Impossible to open the file !\n");
   //     return false;
   //   }
-        
+
   //   while( 1 ){
- 
+
   //     char lineHeader[128];
   //     // read the first word of the line
   //     int res = fscanf(file, "%s", lineHeader);
   //     if (res == EOF)
   //    break; // EOF = End Of File. Quit the loop.
- 
+
   //     // else : parse lineHeader
-        
+
   //     if ( strcmp( lineHeader, "v" ) == 0 ){
   //    glm::vec3 vertex;
   //    fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
   //    temp_vertices.push_back(vertex);
-        
+
   //     }else if ( strcmp( lineHeader, "vt" ) == 0 ){
   //    glm::vec2 uv;
   //    fscanf(file, "%f %f\n", &uv.x, &uv.y );
   //    temp_uvs.push_back(uv);
-        
+
   //     }else if ( strcmp( lineHeader, "vn" ) == 0 ){
   //    glm::vec3 normal;
   //    fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
@@ -122,22 +122,22 @@ namespace Image
   //    normalIndices.push_back(normalIndex[0]);
   //    normalIndices.push_back(normalIndex[1]);
   //    normalIndices.push_back(normalIndex[2]);
-        
+
   //    // For each vertex of each triangle
   //    for( unsigned int i=0; i<vertexIndices.size(); i++ ){
-        
+
   //      unsigned int vertexIndex = vertexIndices[i];
-        
+
   //      glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
-        
+
   //      out_vertices.push_back(vertex);
-        
+
   //      // Read our .obj file
   //      std::vector< glm::vec3 > vertices;
   //      std::vector< glm::vec2 > uvs;
   //      std::vector< glm::vec3 > normals; // Won't be used at the moment.
   //      bool res = loadOBJ("cube.obj", vertices, uvs, normals);
-        
+
   //      glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
   //    }
   //     }
@@ -247,13 +247,13 @@ namespace Image
             const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
             int off = h * w;
             CImg<unsigned int>::vector(off + off1,off + off4,off + off3,off + off2).move_to(faces3d);
-          
+
             colors.insert(CImg<unsigned char>::vector(240, 240, 240));
             opacities.insert(CImg<floatT>::vector(0.4f));
             //CImg<unsigned int>::vector(off + off1,off + off4,off1,off4).move_to(faces3d);
           }
       }
-        
+
       const CImg<float> points3d = vertices>'x';
       //CImg<unsigned char> graph = CImg<unsigned char>().display_object3d("Plane3d", points3d, faces3d, colors, opacities, true);
       const CImg<unsigned char> visu = CImg<unsigned char>(3,512,512,1).fill(230,230,255).permute_axes("yzcx");
@@ -392,8 +392,8 @@ namespace Image
     scene->vertices = scene->vertices.append_object3d(scene->primitives, other->vertices, other->primitives);
     //  scene->colors.insert(other->colors);
     scene->colors=(+scene->colors, other->colors);
-  
-    //scene->opacities = 
+
+    //scene->opacities =
     //  scene->opacities.append(other->opacities);
     scene->opacities=(scene->opacities, other->opacities)>'x';
   }
@@ -600,7 +600,7 @@ namespace ExpParser
         return true;
       pos++;
     }
-    return false;      
+    return false;
   }
 
   unique_ptr<token> NextToken(string s, unsigned int pos){
@@ -667,7 +667,7 @@ namespace ExpParser
         else{
           len = identToken(s, pos);
           type = Ident;
-        }      
+        }
         break;
       }
     }
@@ -801,7 +801,7 @@ namespace ExpParser
       faileval;
     }
   };
- 
+
   // template<typename T>
   // class ValueFM: public Value {
   // public:
@@ -1049,7 +1049,7 @@ namespace ExpParser
             unique_ptr<Expr> e = f->funcValue->substitute(f->parameters, parameters);
             here;
             return e->eval(env);
-            //int length = 
+            //int length =
             faileval;
           }
         cout << "Unknown function: " << name << " ";
@@ -1131,7 +1131,7 @@ namespace ExpParser
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       here;
       return applySubstitute(names, values);
-      here;      
+      here;
     }
     virtual unique_ptr<Func> FuncMe(){ faileval; }
     Value* eval(Env& env){
@@ -1249,7 +1249,7 @@ namespace ExpParser
   // public:
   //   Func f;
   //   virtual string tostring() {
-  //     return f.tostring() + ";";  
+  //     return f.tostring() + ";";
   //   }
   //   virtual Value* eval(Env& env){
   //     //cout << "ENV" << env.names.size() << endl;
@@ -1531,7 +1531,7 @@ namespace ExpParser
       return 0;
     unique_ptr<token> tokVar = NextToken(s, innerPos);
     if (tokVar->type != Ident)
-      return 0; 
+      return 0;
     nextPos = tokVar->nextPos;
     return unique_ptr<string>(new string(tokVar->s));
   }
@@ -1848,7 +1848,7 @@ namespace ExpParser
       if (p2d == 0)
         faileval;
       return new ValueAny<double>(p1d->value + p2d->value, "double value");
-      
+
 
       // if (!(p1->isNum && p2->isNum))
       //        faileval;
@@ -2135,7 +2135,7 @@ public: \
       name = "newmesh";
     }
   } fnewmesh;
- 
+
   class FLinkpoint: public ExpParser::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
@@ -2682,7 +2682,7 @@ int main(int argc, char **argv) {
   env->functions.push_back(&ExpParser::flist_files);
   env->functions.push_back(&ExpParser::fnewpoint);
   env->functions.push_back(&ExpParser::fnewmetametaball);
-  
+
   unique_ptr<ExpParser::Block> scenes(new ExpParser::Block);
   string readopt = "-s";
   string evalopt = "-e";
@@ -2698,7 +2698,7 @@ int main(int argc, char **argv) {
       cout << "-s <file> | -e <expr>" << endl;
       throw new ExpParser::EvalException();
     }
-    
+
     unique_ptr<ExpParser::Block> c = ExpParser::parseCommands(s);
     for(unsigned int j = 0; j < c->commands.size(); j++)
       scenes->commands.push_back(c->commands[j]->copy());
