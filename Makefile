@@ -1,4 +1,4 @@
-# use of 
+# use of
 #   sox
 #   CImg
 #   ffmpeg
@@ -23,8 +23,11 @@ happy: spark
 e:
 	emacs Makefile spark.cpp&
 
-spark: spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
-	g++ -g -o spark spark.cpp  -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
+spunk.o: spunk.cpp
+	g++ -g -c spunk.cpp  -Wall -W -Wsign-compare -ansi -pedantic   -lboost_system -lboost_filesystem -std=c++11
+
+spark: spunk.o spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
+	g++ -g -o spark spunk.o spark.cpp -I. -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
 
 cleanoutput:
 	rm -f output/image*.bmp output/*.mp3 output/out*.mp4
