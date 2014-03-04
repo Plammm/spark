@@ -31,8 +31,10 @@ var play_abribus() =
     abribus.plane(20, 150, subd, subd, x + 240, y -175, z, brown, 0.9);
     abribus.plane(260, 25, subd, subd, x, y -25, z, brown, 0.9);
 
-    abribus.plane(100, 150, subd, subd, x + 20, y -175, z, grey(200), 0.9);
-    abribus.plane(100, 150, subd, subd, x + 140, y -175, z, grey(200), 0.9);
+    var affiche = loadimage("input/ancre2.gif").resize(100, 150);
+    abribus.imageplane(affiche, 100, 150, x + 20, y - 175, z, 0.5);
+    abribus.imageplane(affiche, 100, 150, x + 140, y - 175, z, 0.5);
+
     abribus.hplane(260, 195, subd, subd, x, y -200, z - 200, brown, 0.9);
   }
 

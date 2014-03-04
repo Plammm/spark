@@ -16,7 +16,6 @@ var play_happy () =
   // rotate(v.get(0), - 250, 5.4, 20);
 
   //  stay(10);
-  
   img.clear();
 
   var show_video(directory) =

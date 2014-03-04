@@ -64,82 +64,82 @@ void handler(int sig) {
 namespace Image
 {
   // bool loadOBJ(
-  // 	       const char * path,
-  // 	       std::vector < glm::vec3 > & out_vertices,
-  // 	       std::vector < glm::vec2 > & out_uvs,
-  // 	       std::vector < glm::vec3 > & out_normals
-  // 	       )
-  // {	
+  //           const char * path,
+  //           std::vector < glm::vec3 > & out_vertices,
+  //           std::vector < glm::vec2 > & out_uvs,
+  //           std::vector < glm::vec3 > & out_normals
+  //           )
+  // {  
   //   std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
   //   std::vector< glm::vec3 > temp_vertices;
   //   std::vector< glm::vec2 > temp_uvs;
   //   std::vector< glm::vec3 > temp_normals;
-	
+        
   //   FILE * file = fopen(path, "r");
   //   if( file == NULL ){
   //     printf("Impossible to open the file !\n");
   //     return false;
   //   }
-	
+        
   //   while( 1 ){
  
   //     char lineHeader[128];
   //     // read the first word of the line
   //     int res = fscanf(file, "%s", lineHeader);
   //     if (res == EOF)
-  // 	break; // EOF = End Of File. Quit the loop.
+  //    break; // EOF = End Of File. Quit the loop.
  
   //     // else : parse lineHeader
-	
+        
   //     if ( strcmp( lineHeader, "v" ) == 0 ){
-  // 	glm::vec3 vertex;
-  // 	fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
-  // 	temp_vertices.push_back(vertex);
-	
+  //    glm::vec3 vertex;
+  //    fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+  //    temp_vertices.push_back(vertex);
+        
   //     }else if ( strcmp( lineHeader, "vt" ) == 0 ){
-  // 	glm::vec2 uv;
-  // 	fscanf(file, "%f %f\n", &uv.x, &uv.y );
-  // 	temp_uvs.push_back(uv);
-	
+  //    glm::vec2 uv;
+  //    fscanf(file, "%f %f\n", &uv.x, &uv.y );
+  //    temp_uvs.push_back(uv);
+        
   //     }else if ( strcmp( lineHeader, "vn" ) == 0 ){
-  // 	glm::vec3 normal;
-  // 	fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
-  // 	temp_normals.push_back(normal);
+  //    glm::vec3 normal;
+  //    fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
+  //    temp_normals.push_back(normal);
   //     }else if ( strcmp( lineHeader, "f" ) == 0 ){
-  // 	std::string vertex1, vertex2, vertex3;
-  // 	unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-  // 	int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
-  // 	if (matches != 9){
-  // 	  printf("File can't be read by our simple parser : ( Try exporting with other options\n");
-  // 	  return false;
-  // 	}
-  // 	vertexIndices.push_back(vertexIndex[0]);
-  // 	vertexIndices.push_back(vertexIndex[1]);
-  // 	vertexIndices.push_back(vertexIndex[2]);
-  // 	uvIndices    .push_back(uvIndex[0]);
-  // 	uvIndices    .push_back(uvIndex[1]);
-  // 	uvIndices    .push_back(uvIndex[2]);
-  // 	normalIndices.push_back(normalIndex[0]);
-  // 	normalIndices.push_back(normalIndex[1]);
-  // 	normalIndices.push_back(normalIndex[2]);
-	
-  // 	// For each vertex of each triangle
-  // 	for( unsigned int i=0; i<vertexIndices.size(); i++ ){
-	
-  // 	  unsigned int vertexIndex = vertexIndices[i];
-	
-  // 	  glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
-	
-  // 	  out_vertices.push_back(vertex);
-	
-  // 	  // Read our .obj file
-  // 	  std::vector< glm::vec3 > vertices;
-  // 	  std::vector< glm::vec2 > uvs;
-  // 	  std::vector< glm::vec3 > normals; // Won't be used at the moment.
-  // 	  bool res = loadOBJ("cube.obj", vertices, uvs, normals);
-	
-  // 	  glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-  // 	}
+  //    std::string vertex1, vertex2, vertex3;
+  //    unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
+  //    int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
+  //    if (matches != 9){
+  //      printf("File can't be read by our simple parser : ( Try exporting with other options\n");
+  //      return false;
+  //    }
+  //    vertexIndices.push_back(vertexIndex[0]);
+  //    vertexIndices.push_back(vertexIndex[1]);
+  //    vertexIndices.push_back(vertexIndex[2]);
+  //    uvIndices    .push_back(uvIndex[0]);
+  //    uvIndices    .push_back(uvIndex[1]);
+  //    uvIndices    .push_back(uvIndex[2]);
+  //    normalIndices.push_back(normalIndex[0]);
+  //    normalIndices.push_back(normalIndex[1]);
+  //    normalIndices.push_back(normalIndex[2]);
+        
+  //    // For each vertex of each triangle
+  //    for( unsigned int i=0; i<vertexIndices.size(); i++ ){
+        
+  //      unsigned int vertexIndex = vertexIndices[i];
+        
+  //      glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
+        
+  //      out_vertices.push_back(vertex);
+        
+  //      // Read our .obj file
+  //      std::vector< glm::vec3 > vertices;
+  //      std::vector< glm::vec2 > uvs;
+  //      std::vector< glm::vec3 > normals; // Won't be used at the moment.
+  //      bool res = loadOBJ("cube.obj", vertices, uvs, normals);
+        
+  //      glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
+  //    }
   //     }
   //   }
 
@@ -164,50 +164,51 @@ namespace Image
     graph.save_bmp("/home/fmaurel/prog/spark/test1.bmp");
   }
 
+
   struct Plane3d {
     typedef typename cimg::last<float,float>::type floatT;
 
     static CImg<float> plane3d(CImgList<float>& primitives,
-				const float size_x=100, const float size_z=100,
-				const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
+                                const float size_x=100, const float size_z=100,
+                                const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
       primitives.assign();
       if (!subdivisions_x || !subdivisions_y) return CImg<floatT>();
       CImgList<floatT> vertices;
       const unsigned int w = subdivisions_x + 1, h = subdivisions_y + 1;
       const float fx = (float)size_x/subdivisions_x, fy = (float)size_z/subdivisions_y;
       for (unsigned int y = 0; y<h; ++y)
-	for (unsigned int x = 0; x<w; ++x)
-	  CImg<floatT>::vector(fx*x,fy*y,0).move_to(vertices);
+        for (unsigned int x = 0; x<w; ++x)
+          CImg<floatT>::vector(fx*x,fy*y,0).move_to(vertices);
       for (unsigned int y = 0; y<subdivisions_y; ++y) for (unsigned int x = 0; x<subdivisions_x; ++x) {
-	  const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
-	  CImg<float>::vector(off1,off2, off3, off4).move_to(primitives);
-	  CImg<float>::vector(off1,off4, off3, off2).move_to(primitives);
-	}
+          const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
+          CImg<float>::vector(off1,off2, off3, off4).move_to(primitives);
+          CImg<float>::vector(off1,off4, off3, off2).move_to(primitives);
+        }
       return vertices>'x';
     }
 
     static CImg<float> hplane3d(CImgList<unsigned int>& primitives,
-				const float size_x=100, const float size_z=100,
-				const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
+                                const float size_x=100, const float size_z=100,
+                                const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
       primitives.assign();
       if (!subdivisions_x || !subdivisions_y) return CImg<floatT>();
       CImgList<floatT> vertices;
       const unsigned int w = subdivisions_x + 1, h = subdivisions_y + 1;
       const float fx = (float)size_x/subdivisions_x, fy = (float)size_z/subdivisions_y;
       for (unsigned int y = 0; y<h; ++y)
-	for (unsigned int x = 0; x<w; ++x)
-	  CImg<floatT>::vector(fx*x,0, fy*y).move_to(vertices);
+        for (unsigned int x = 0; x<w; ++x)
+          CImg<floatT>::vector(fx*x,0, fy*y).move_to(vertices);
       for (unsigned int y = 0; y<subdivisions_y; ++y) for (unsigned int x = 0; x<subdivisions_x; ++x) {
-	  const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
-	  CImg<unsigned int>::vector(off1,off2, off3, off4).move_to(primitives);
-	  CImg<unsigned int>::vector(off1,off4, off3, off2).move_to(primitives);
-	}
+          const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
+          CImg<unsigned int>::vector(off1,off2, off3, off4).move_to(primitives);
+          CImg<unsigned int>::vector(off1,off4, off3, off2).move_to(primitives);
+        }
       return vertices>'x';
     }
 
     static void Draw(int argc, char **argv,
-		     const float size_x=1, const float size_y=1,
-		     const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
+                     const float size_x=1, const float size_y=1,
+                     const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
       const char* expression = "x + y * y";
       const char *const formula = cimg_option("-f",expression,"Formula to plot");
       CImgList<unsigned int> faces3d;
@@ -222,35 +223,35 @@ namespace Image
       // if (10 < f0)
       //  throw f0;
       for (unsigned int y = 0; y<h; ++y)
-	for (unsigned int x = 0; x<w; ++x){
-	  double z = cimg::eval(formula, fx*x, fy*y, 0, 0);
-	  //double z = cimg::eval(0, fx*x, fy*y, 0, 0);
-	  //z = x + y * y;
-	  CImg<floatT>::vector(fx*x,fy*y,z).move_to(vertices);
-	}
+        for (unsigned int x = 0; x<w; ++x){
+          double z = cimg::eval(formula, fx*x, fy*y, 0, 0);
+          //double z = cimg::eval(0, fx*x, fy*y, 0, 0);
+          //z = x + y * y;
+          CImg<floatT>::vector(fx*x,fy*y,z).move_to(vertices);
+        }
       for (unsigned int y = 0; y<subdivisions_y; ++y)
-	for (unsigned int x = 0; x<subdivisions_x; ++x) {
-	  const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
-	  CImg<unsigned int>::vector(off1,off4,off3,off2).move_to(faces3d);
-	  colors.insert(CImg<unsigned char>::vector(0,0,255));
-	  opacities.insert(CImg<floatT>::vector(1.0f));
-	}
+        for (unsigned int x = 0; x<subdivisions_x; ++x) {
+          const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
+          CImg<unsigned int>::vector(off1,off4,off3,off2).move_to(faces3d);
+          colors.insert(CImg<unsigned char>::vector(0,0,255));
+          opacities.insert(CImg<floatT>::vector(1.0f));
+        }
       if (true){
-	for (unsigned int y = 0; y<h; ++y)
-	  for (unsigned int x = 0; x<w; ++x){
-	    double z = 0;
-	    CImg<floatT>::vector(fx*x,fy*y,z).move_to(vertices);
-	  }
-	for (unsigned int y = 0; y<subdivisions_y; ++y)
-	  for (unsigned int x = 0; x<subdivisions_x; ++x) {
-	    const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
-	    int off = h * w;
-	    CImg<unsigned int>::vector(off + off1,off + off4,off + off3,off + off2).move_to(faces3d);
-	  
-	    colors.insert(CImg<unsigned char>::vector(240, 240, 240));
-	    opacities.insert(CImg<floatT>::vector(0.4f));
-	    //CImg<unsigned int>::vector(off + off1,off + off4,off1,off4).move_to(faces3d);
-	  }
+        for (unsigned int y = 0; y<h; ++y)
+          for (unsigned int x = 0; x<w; ++x){
+            double z = 0;
+            CImg<floatT>::vector(fx*x,fy*y,z).move_to(vertices);
+          }
+        for (unsigned int y = 0; y<subdivisions_y; ++y)
+          for (unsigned int x = 0; x<subdivisions_x; ++x) {
+            const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
+            int off = h * w;
+            CImg<unsigned int>::vector(off + off1,off + off4,off + off3,off + off2).move_to(faces3d);
+          
+            colors.insert(CImg<unsigned char>::vector(240, 240, 240));
+            opacities.insert(CImg<floatT>::vector(0.4f));
+            //CImg<unsigned int>::vector(off + off1,off + off4,off1,off4).move_to(faces3d);
+          }
       }
         
       const CImg<float> points3d = vertices>'x';
@@ -296,15 +297,15 @@ namespace Image
       cout << lv << " " << lp << " " << n << endl;
       CImgList<float> verticeslist;
       for (int i = 0; i < lv; i++){
-	double x, y, z;
-	infile >> x >> y >> z;
-	//vertex(x + 1000, -y+1000, -z+1000);
-	CImg<float>::vector(x,-y,-z).move_to(verticeslist);
+        double x, y, z;
+        infile >> x >> y >> z;
+        //vertex(x + 1000, -y+1000, -z+1000);
+        CImg<float>::vector(x,-y,-z).move_to(verticeslist);
       }
       for (int i = 0; i < lp; i++){
-	int n, x, y, z;
-	infile >> n >> x >> y >> z;
-	primitive(x, y, z);
+        int n, x, y, z;
+        infile >> n >> x >> y >> z;
+        primitive(x, y, z);
       }
       infile.close();
       vertices = (verticeslist>'x').shift_object3d();
@@ -321,8 +322,8 @@ namespace Image
     // }
     void drawrotate(CImg<unsigned char>* img, int x, int y, int z, float alpha, float beta, float gamma, float focale){
       //      cout << "draw1 " << vertices.size() << endl;
-      //      const CImg<float>	rpoints = CImg<>::rotation_matrix(1,1,0,(alpha))*CImg<>::rotation_matrix(1,0,1,(beta))*CImg<>::rotation_matrix(0,1,1,(gamma))*((vertices>'x').shift_object3d());
-      const CImg<float>	rpoints = CImg<>::rotation_matrix(1,0,0,(alpha))*CImg<>::rotation_matrix(0,1,0,(beta))*CImg<>::rotation_matrix(0,0,1,(gamma))*((vertices));
+      //      const CImg<float> rpoints = CImg<>::rotation_matrix(1,1,0,(alpha))*CImg<>::rotation_matrix(1,0,1,(beta))*CImg<>::rotation_matrix(0,1,1,(gamma))*((vertices>'x').shift_object3d());
+      const CImg<float> rpoints = CImg<>::rotation_matrix(1,0,0,(alpha))*CImg<>::rotation_matrix(0,1,0,(beta))*CImg<>::rotation_matrix(0,0,1,(gamma))*((vertices));
       //      cout << "BB" << endl;
       //cout << "draw2 " << rpoints.size() << " " << endl;
       img->draw_object3d(x, y, z, rpoints, primitives, colors, opacities, 4, false, focale);
@@ -335,9 +336,31 @@ namespace Image
     const CImg<unsigned char> visu = CImg<unsigned char>(3,512,512,1).fill(230,230,255).permute_axes("yzcx");
     CImg<float> view_matrix = CImg<>::identity_matrix(4);
     visu.display_object3d("SP 1",scene->vertices,scene->primitives,scene->colors,scene->opacities,true,4,4,false,
-			  500.0f,0,0,-5000,0.5f,0.1f,true,view_matrix.data());
+                          500.0f,0,0,-5000,0.5f,0.1f,true,view_matrix.data());
   }
 
+  unique_ptr<MyMesh> fmimageplane(const float size_x, const float size_y, const int x, const int y, const  int z, CImg<unsigned char> &texture, float opacity){
+    CImgList<float> prims;
+    prims.assign(1,1,4,1,1, 3,0,1,2);
+    CImgList<float> vertices;
+    CImg<float>::vector(0,0,0).move_to(vertices);
+    CImg<float>::vector(0,size_y,0).move_to(vertices);
+    CImg<float>::vector(size_x,size_y,0).move_to(vertices);
+    CImg<float>::vector(size_x,0,0).move_to(vertices);
+    CImg<float> pts = (vertices>'x').shift_object3d(x,y,z);
+    CImgList<unsigned char> cols;
+    cimglist_for(prims,p) {
+      cols.insert(texture,~0U,true);
+      prims[p].append(CImg<unsigned int>::vector(0,0,size_x-1,0,size_x-1,size_y-1,0,size_y-1),'y');
+    }
+    CImg<float> opacities = CImg<float>(prims.size(), opacity);
+    unique_ptr<MyMesh> result(new MyMesh);
+    result->primitives = prims;
+    result->vertices = pts;
+    result->colors = cols;
+    result->opacities = opacities;
+    return result;
+  }
 
   unique_ptr<MyMesh> fmplane3d(const float size_x, const float size_y, const unsigned int subdivisions_x, const unsigned int subdivisions_y, const int x, const int y, const  int z, CImg<unsigned char> &color, float opacity){
     CImgList<float> prims;
@@ -395,7 +418,7 @@ namespace Image
       y += dy;
       z += dz;
       for(unsigned int i = 0; i < links.size(); i++)
-	links[i]->translate(dx, dy, dz);
+        links[i]->translate(dx, dy, dz);
     }
   };
 
@@ -421,15 +444,15 @@ namespace Image
     float potential(const float x, const float y, const float z) {
       float potential = 0;
       for(unsigned int i = 0; i < balls.size(); i++){
-	float dx = x - balls[i]->point->x;
-	float dy = y - balls[i]->point->y;
-	float dz = z - balls[i]->point->z;
-	float r = (dx * dx + dy * dy + dz * dz) / balls[i]->radius;
-	float v = 1 / (r);
-	//	if (r < balls[i]->threshold && ( potential == 0 || potential < v))
-	if (r < balls[i]->threshold)
-	  potential += v;//(1 - r * r) * (1 - r * r);
-	  //	  potential += 1 - r * (r * (4 * r + 17) - 22) / 9;
+        float dx = x - balls[i]->point->x;
+        float dy = y - balls[i]->point->y;
+        float dz = z - balls[i]->point->z;
+        float r = (dx * dx + dy * dy + dz * dz) / balls[i]->radius;
+        float v = 1 / (r);
+        //      if (r < balls[i]->threshold && ( potential == 0 || potential < v))
+        if (r < balls[i]->threshold)
+          potential += v;//(1 - r * r) * (1 - r * r);
+          //      potential += 1 - r * (r * (4 * r + 17) - 22) / 9;
       }
       return potential;
     }
@@ -449,9 +472,9 @@ namespace Image
     inline float operator()(const float x, const float y, const float z) const {
       float potential = 0;
       for (unsigned int i = 0; i < balls.size(); i++){
-	float pot = balls[i]->potential(x, y, z);
-	if (potential < pot)
-	  potential = pot;
+        float pot = balls[i]->potential(x, y, z);
+        if (potential < pot)
+          potential = pot;
       }
       return potential;
     }
@@ -461,23 +484,23 @@ namespace Image
       result->primitives.reverse_object3d();
 
       for(unsigned int i = 0; i < result->primitives.size(); i++){
-	float weight = 0.00001;
-	float r = 0;
-	float g = 0;
-	float b = 0;
-	CImg<float> f = result->primitives[i];
-	float x = result->vertices(f(0), 0);
-	float y = result->vertices(f(0), 1);
-	float z = result->vertices(f(0), 2);
-	for(unsigned bid = 0; bid < balls.size(); bid++){
-	  float potential = balls[bid]->potential(x, y, z);
-	  weight += potential;
-	  r += potential * (*(balls[bid]->color))(0);
-	  g += potential * (*(balls[bid]->color))(1);
-	  b += potential * (*(balls[bid]->color))(2);
-	}
-	//cout << f(0) << " " << r << " " << g << " " << b << " " << weight << " " << endl;
-	result->colors.insert(CImg<unsigned char>::vector(r / weight, g / weight, b / weight));
+        float weight = 0.00001;
+        float r = 0;
+        float g = 0;
+        float b = 0;
+        CImg<float> f = result->primitives[i];
+        float x = result->vertices(f(0), 0);
+        float y = result->vertices(f(0), 1);
+        float z = result->vertices(f(0), 2);
+        for(unsigned bid = 0; bid < balls.size(); bid++){
+          float potential = balls[bid]->potential(x, y, z);
+          weight += potential;
+          r += potential * (*(balls[bid]->color))(0);
+          g += potential * (*(balls[bid]->color))(1);
+          b += potential * (*(balls[bid]->color))(2);
+        }
+        //cout << f(0) << " " << r << " " << g << " " << b << " " << weight << " " << endl;
+        result->colors.insert(CImg<unsigned char>::vector(r / weight, g / weight, b / weight));
       }
       return result;
     }
@@ -522,7 +545,7 @@ namespace ExpParser
   bool stringContains(string& s, char c){
     for(unsigned int i = 0; i < s.length(); i++)
       if(c == s[i])
-	return true;
+        return true;
     return false;
   }
 
@@ -530,7 +553,7 @@ namespace ExpParser
     for(unsigned int i = 0; i < s.length(); i++)
       //      if(!isalnum(s[i]))
       if (!stringContains(intchars, s[i]))
-	return false;
+        return false;
     return true;
   }
 
@@ -543,7 +566,7 @@ namespace ExpParser
   bool isSpace(char c){
     for(unsigned int i = 0; i < spaces.length(); i++)
       if(c == spaces[i])
-	return true;
+        return true;
     return false;
   }
 
@@ -557,10 +580,10 @@ namespace ExpParser
       return len;
     if(stringContains(intchars, s[pos]))
       while(pos < s.length() && stringContains(doublechars, s[pos + len]))
-	len++;
+        len++;
     else
       while(pos < s.length() && isLetter(s[pos + len]))
-	len++;
+        len++;
     return len;
   }
 
@@ -571,10 +594,10 @@ namespace ExpParser
     unsigned int maxpos = s.length() - 1;
     while(pos <= maxpos){
       if (pos < maxpos - 1 && s[pos] == '/' && s[pos + 1] == '/')
-	while(pos <= maxpos && s[pos] != '\n')
-	  pos++;
+        while(pos <= maxpos && s[pos] != '\n')
+          pos++;
       else if (!isSpace(s[pos]))
-	return true;
+        return true;
       pos++;
     }
     return false;      
@@ -588,13 +611,13 @@ namespace ExpParser
 
     while(!done){
       if (s.length() <= pos)
-	{
-	  cout << pos << endl;
-	  handler(1);
-	  throw new exception();
-	  type = End;
-	  break;
-	}
+        {
+          cout << pos << endl;
+          handler(1);
+          throw new exception();
+          type = End;
+          break;
+        }
       done = true;
       switch(s[pos]){
       case '{':
@@ -604,48 +627,48 @@ namespace ExpParser
       case '(':
       case ',':
       case ')':
-	len = 1;
-	type = Keyword;
-	break;
+        len = 1;
+        type = Keyword;
+        break;
       case ' ':
       case '\t':
       case '\n':
       case '\r':
-	pos++;
-	done = false;
-	break;
+        pos++;
+        done = false;
+        break;
       case '"':
-	{
-	  //	  int nextPos = -12;
-	  //failparse;
-	  len = 1;
-	  while(pos + len < s.length() && s[pos + len] != '"')
-	    len++;
-	  len++;
-	  type = StringCst;
-	}
-	break;
+        {
+          //      int nextPos = -12;
+          //failparse;
+          len = 1;
+          while(pos + len < s.length() && s[pos + len] != '"')
+            len++;
+          len++;
+          type = StringCst;
+        }
+        break;
       case '/':
-	if (pos < s.length() - 2 && s[pos + 1] == '/'){
-	  while(pos < s.length() && s[pos] != '\n')
-	    pos++;
-	  done = false;
-	}
-	else{
-	  len = 1;
-	  type = Op;
-	}
-	break;
+        if (pos < s.length() - 2 && s[pos + 1] == '/'){
+          while(pos < s.length() && s[pos] != '\n')
+            pos++;
+          done = false;
+        }
+        else{
+          len = 1;
+          type = Op;
+        }
+        break;
       default:
-	if(isOp(s[pos])){
-	  len = 1;
-	  type = Op;
-	}
-	else{
-	  len = identToken(s, pos);
-	  type = Ident;
-	}      
-	break;
+        if(isOp(s[pos])){
+          len = 1;
+          type = Op;
+        }
+        else{
+          len = identToken(s, pos);
+          type = Ident;
+        }      
+        break;
       }
     }
 
@@ -657,7 +680,7 @@ namespace ExpParser
 
     if (type == StringCst){
       if (type != End)
-	tok->s = s.substr(pos + 1, len - 2);
+        tok->s = s.substr(pos + 1, len - 2);
       //cout << "STRING " << pos << " " << len << " " << tok->s << endl;
     }
 
@@ -826,25 +849,25 @@ namespace ExpParser
   //     switch(kind){
   //     case Int:
   //       sprintf(output, "%i", intValue);
-  // 	//cout << output << " !!" << endl;
-  // 	return output;
-  // 	break;
+  //    //cout << output << " !!" << endl;
+  //    return output;
+  //    break;
   //     case Double:
   //       sprintf(output, "%g", doubleValue);
-  // 	return output;
-  // 	break;
+  //    return output;
+  //    break;
   //     case String:
-  // 	return stringValue;
-  // 	break;
+  //    return stringValue;
+  //    break;
   //     case Function:
-  // 	return "<fun>";
-  // 	break;
+  //    return "<fun>";
+  //    break;
   //     // case Cimg_char:
-  //     // 	return "< ?? >";
-  //     // 	break;
+  //     //     return "< ?? >";
+  //     //     break;
   //     case Ptr:
-  // 	return "<" + ptr_kind + ">";
-  // 	break;
+  //    return "<" + ptr_kind + ">";
+  //    break;
   //     }
   //     cout << "Kind" << kind << endl;
   //     faileval;
@@ -874,7 +897,7 @@ namespace ExpParser
   unique_ptr<T2>* assoc(vector<T1>names, vector<unique_ptr<T2>> values, T1 name){
     for(int i = 0; i < names.size(); i++)
       if (names[i] == name)
-	return &values[i];
+        return &values[i];
     return 0;
   }
 
@@ -927,7 +950,7 @@ namespace ExpParser
       result->isFunction = isFunction;
       result->isInfix = isInfix;
       for(unsigned int i = 0; i < parameters.size(); i++)
-	result->parameters.push_back(parameters[i]->copy());
+        result->parameters.push_back(parameters[i]->copy());
       result->isValue = isValue;
       here;
       return move(result);
@@ -943,7 +966,7 @@ namespace ExpParser
       result->isFunction = isFunction;
       result->isInfix = isInfix;
       for(unsigned int i = 0; i < parameters.size(); i++)
-	result->parameters.push_back(parameters[i]->substitute(names, values));
+        result->parameters.push_back(parameters[i]->substitute(names, values));
       return move(result);
     }
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
@@ -951,39 +974,39 @@ namespace ExpParser
       //unique_ptr<Expr>* v;// = assoc<string, Expr>(names, values, name));
       int id = -1;
       for(unsigned int i = 0; i < names.size(); i++)
-	if (names[i] == name)
-	  id = i;
+        if (names[i] == name)
+          id = i;
       //v = &(values[i]);
       here;
       if (id < 0){
-	here;
-	if (parameters.size() == 0)
-	  return copy();
-	return applySubstitute(names, values);
+        here;
+        if (parameters.size() == 0)
+          return copy();
+        return applySubstitute(names, values);
       }
       here;
       unique_ptr<Expr> v = values[id]->copy();
       here;
       //cout << "SUB " << name << " " << parameters.size() << " " << tostring() << " " << v->tostring() <<endl;
       if (!isFunction)
-	return v->copy();
+        return v->copy();
       else{
-	here;
-	if (v->kind != ExFunc)
-	  faileval;
-	here;
-	//Func v = v.get();
-	//unique_ptr<Func> vv ((Func*)(&(v*)));
-	unique_ptr<Func> vv = v->FuncMe();
-	// cout << tostring() << endl;
-	// cout << v->tostring() << " " << typeid(*v).name() << endl;
-	// cout << vv->name << " " << vv->isFunction << " " << vv->parameters.size() << " " << (vv->isValue?"true":"false") << endl;
-	if (vv->isFunction || vv->isValue)
-	  faileval;
-	here;
-	unique_ptr<Func> result = applySubstitute(names, values)->FuncMe();
-	result->name = vv->name;
-	return move(result);
+        here;
+        if (v->kind != ExFunc)
+          faileval;
+        here;
+        //Func v = v.get();
+        //unique_ptr<Func> vv ((Func*)(&(v*)));
+        unique_ptr<Func> vv = v->FuncMe();
+        // cout << tostring() << endl;
+        // cout << v->tostring() << " " << typeid(*v).name() << endl;
+        // cout << vv->name << " " << vv->isFunction << " " << vv->parameters.size() << " " << (vv->isValue?"true":"false") << endl;
+        if (vv->isFunction || vv->isValue)
+          faileval;
+        here;
+        unique_ptr<Func> result = applySubstitute(names, values)->FuncMe();
+        result->name = vv->name;
+        return move(result);
       }
     }
     virtual unique_ptr<Func> FuncMe(){
@@ -993,59 +1016,59 @@ namespace ExpParser
       here;
       //cout << name << endl;
       if (isValue)
-	faileval;
+        faileval;
       //return v;
       if (isFunction) {
-	if (name.length() == 0 && parameters.size() == 1)
-	  return parameters[0]->eval(env);
-	here;
-	for(unsigned int i = 0; i < env.functions.size(); i++)
-	  if (name == env.functions[i]->name){
-	    FValue* f = env.functions[i];
-	    vector<Value*> params;
-	    for(unsigned int j = 0; j < parameters.size(); j++)
-	      params.push_back(parameters[j]->eval(env));
-	    return f->eval(params);
-	  }
-	here;
-	for(int i = env.names.size() -1; 0 <= i; i--)
-	  if (name == env.names[i]){
-	    ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
-	    if (f == 0)
-	      faileval;
-	    //if (f->funcValue
-	    //vector<Value*> params;
-	    //	    for(unsigned int j = 0; j < parameters.size(); j++)
-	    // params.push_back(parameters[j]);
-	    if (f->parameters.size() != parameters.size()){
-	      cout << "Bad nb parameters for application. " << tostring() << endl;
-	      faileval;
-	    }
-	    here;
-	    //cout << f->funcValue->tostring() << endl;
-	    unique_ptr<Expr> e = f->funcValue->substitute(f->parameters, parameters);
-	    here;
-	    return e->eval(env);
-	    //int length = 
-	    faileval;
-	  }
-	cout << "Unknown function: " << name << " ";
-	faileval
+        if (name.length() == 0 && parameters.size() == 1)
+          return parameters[0]->eval(env);
+        here;
+        for(unsigned int i = 0; i < env.functions.size(); i++)
+          if (name == env.functions[i]->name){
+            FValue* f = env.functions[i];
+            vector<Value*> params;
+            for(unsigned int j = 0; j < parameters.size(); j++)
+              params.push_back(parameters[j]->eval(env));
+            return f->eval(params);
+          }
+        here;
+        for(int i = env.names.size() -1; 0 <= i; i--)
+          if (name == env.names[i]){
+            ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
+            if (f == 0)
+              faileval;
+            //if (f->funcValue
+            //vector<Value*> params;
+            //      for(unsigned int j = 0; j < parameters.size(); j++)
+            // params.push_back(parameters[j]);
+            if (f->parameters.size() != parameters.size()){
+              cout << "Bad nb parameters for application. " << tostring() << endl;
+              faileval;
+            }
+            here;
+            //cout << f->funcValue->tostring() << endl;
+            unique_ptr<Expr> e = f->funcValue->substitute(f->parameters, parameters);
+            here;
+            return e->eval(env);
+            //int length = 
+            faileval;
+          }
+        cout << "Unknown function: " << name << " ";
+        faileval
       }
       here;
       for(int i = env.names.size() -1; 0 <= i; i--)
-	if (name == env.names[i])
-	  return env.values[i];
+        if (name == env.names[i])
+          return env.values[i];
       if (stringContains(name, '.')){ // TODO isdouble
-	float res = 0.;
-	char* nameChars = (char*)(name.data());
-	sscanf(nameChars, "%g", &res);
-	return new ValueAny<double>((double)res, name);
+        float res = 0.;
+        char* nameChars = (char*)(name.data());
+        sscanf(nameChars, "%g", &res);
+        return new ValueAny<double>((double)res, name);
       } else if (isint(name)){
-	int res = 0;
-	char* nameChars = (char*)(name.data());
-	sscanf(nameChars, "%i", &res);
-	return new ValueAny<int>(res, name);
+        int res = 0;
+        char* nameChars = (char*)(name.data());
+        sscanf(nameChars, "%i", &res);
+        return new ValueAny<int>(res, name);
       }
       cout << "Unknown variable: " + name << endl;
       faileval;
@@ -1053,26 +1076,26 @@ namespace ExpParser
     string tostring() {
       string result;
       if (isInfix){
-	unsigned int size = parameters.size();
-	for(unsigned int i = 0; i < size; i++){
-	  result += parameters[i]->tostring();
-	  if (i < size - 1)
-	    result += " " + name + " ";
-	}
-	return result;
+        unsigned int size = parameters.size();
+        for(unsigned int i = 0; i < size; i++){
+          result += parameters[i]->tostring();
+          if (i < size - 1)
+            result += " " + name + " ";
+        }
+        return result;
       }
       result = name;
       if (isFunction)
-	result += "(";
+        result += "(";
       unsigned int size = parameters.size();
       for(unsigned int i = 0; i < size; i++)
-	{
-	  result += parameters[i]->tostring();
-	  if (i < size - 1)
-	    result += ", ";
-	}
+        {
+          result += parameters[i]->tostring();
+          if (i < size - 1)
+            result += ", ";
+        }
       if (isFunction)
-	result += ")";
+        result += ")";
       return result;
     }
   };
@@ -1088,7 +1111,7 @@ namespace ExpParser
       result->member = member;
       result->v = v->copy();
       for(unsigned int i = 0; i < parameters.size(); i++)
-	result->parameters.push_back(parameters[i]->copy());
+        result->parameters.push_back(parameters[i]->copy());
       here;
       return move(result);
     }
@@ -1102,7 +1125,7 @@ namespace ExpParser
       result->member = member;
       result->v = v->substitute(names, values);
       for(unsigned int i = 0; i < parameters.size(); i++)
-	result->parameters.push_back(parameters[i]->substitute(names, values));
+        result->parameters.push_back(parameters[i]->substitute(names, values));
       return move(result);
     }
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
@@ -1115,13 +1138,13 @@ namespace ExpParser
       here;
       Value* vv = v->eval(env);
       for(unsigned int i = 0; i < vv->members.size(); i++)
-	if (member == vv->members[i]->name){
-	  vector<Value*> params;
-	  params.push_back(vv);
-	  for(unsigned int j = 0; j < parameters.size(); j++)
-	    params.push_back(parameters[j]->eval(env));
-	  return vv->members[i]->eval(params);
-	}
+        if (member == vv->members[i]->name){
+          vector<Value*> params;
+          params.push_back(vv);
+          for(unsigned int j = 0; j < parameters.size(); j++)
+            params.push_back(parameters[j]->eval(env));
+          return vv->members[i]->eval(params);
+        }
       cout << "Unknown member: " << member << endl;
       faileval;
     }
@@ -1129,11 +1152,11 @@ namespace ExpParser
       string result = v->tostring() + "." + member + "(";
       unsigned int size = parameters.size();
       for(unsigned int i = 0; i < size; i++)
-	{
-	  result += parameters[i]->tostring();
-	  if (i < size - 1)
-	    result += ", ";
-	}
+        {
+          result += parameters[i]->tostring();
+          if (i < size - 1)
+            result += ", ";
+        }
       result += ")";
       return result;
     }
@@ -1167,10 +1190,10 @@ namespace ExpParser
       vector<string> subnames;
       vector<unique_ptr<Expr>> subvalues;
       for(unsigned int i = 0; i < names.size(); i++)
-	if (names[i] != name){
-	  subnames.push_back(names[i]);
-	  subvalues.push_back(values[i]->copy());
-	}
+        if (names[i] != name){
+          subnames.push_back(names[i]);
+          subvalues.push_back(values[i]->copy());
+        }
       unique_ptr<Expr> v = value->substitute(subnames, subvalues);
       unique_ptr<Definition> result(new Definition);
       result->isFunction = isFunction;
@@ -1183,9 +1206,9 @@ namespace ExpParser
     virtual Value* eval(Env& env){
       env.names.push_back(name);
       if (isFunction)
-	env.values.push_back(new ValueF(value, parameters));
+        env.values.push_back(new ValueF(value, parameters));
       else
-	env.values.push_back(value->eval(env));
+        env.values.push_back(value->eval(env));
       return unit;
     }
   };
@@ -1213,10 +1236,10 @@ namespace ExpParser
       //Value* v = value.eval(env);
       //cout << name << " <- " << v->tostring() << endl;
       for(int i = env.names.size() -1; 0 <= i; i--)
-	if (name == env.names[i]){
-	  env.values[i] = value->eval(env);
-	  return unit;
-	}
+        if (name == env.names[i]){
+          env.values[i] = value->eval(env);
+          return unit;
+        }
       cout << "Unknown variable: " + name << endl;
       faileval;
     }
@@ -1233,7 +1256,7 @@ namespace ExpParser
   //     f.eval(env);
   //     //  int length = env.names.size();
   //     //for(unsigned int i = 0; i < commands.size(); i++)
-  //     //	commands[i]->eval(env);
+  //     //     commands[i]->eval(env);
   //     //env.resize(length);
   //   }
   // };
@@ -1244,7 +1267,7 @@ namespace ExpParser
     unique_ptr<Expr> copy(){
       new_result(Block);
       for(unsigned int i = 0; i < commands.size(); i++)
-	result->commands.push_back(commands[i]->copy());
+        result->commands.push_back(commands[i]->copy());
       return move(result);
     }
     virtual unique_ptr<Func> FuncMe(){ faileval; }
@@ -1253,21 +1276,21 @@ namespace ExpParser
       unique_ptr<Block> b(new Block);
       //cout << "SIZE " << commands.size() << endl;
       for(unsigned int i = 0; i < commands.size(); i++){
-	here;
-	//cout << commands[i]->tostring() << endl;
-	// here;
-	// cout << commands[i]->tostring() << endl;
-	// here;
-	// cout << commands[i]->substitute(names, values)->tostring() << endl;
-	// here;
-	// cout << commands[i]->tostring() << endl;
-	// here;
-	// cout << commands[i]->substitute(names, values)->tostring() << endl;
-	// here;
-	// cout << commands[i]->substitute(names, values)->tostring() << endl;
-	// here;
-	b->commands.push_back(commands[i]->substitute(names, values));
-	here;
+        here;
+        //cout << commands[i]->tostring() << endl;
+        // here;
+        // cout << commands[i]->tostring() << endl;
+        // here;
+        // cout << commands[i]->substitute(names, values)->tostring() << endl;
+        // here;
+        // cout << commands[i]->tostring() << endl;
+        // here;
+        // cout << commands[i]->substitute(names, values)->tostring() << endl;
+        // here;
+        // cout << commands[i]->substitute(names, values)->tostring() << endl;
+        // here;
+        b->commands.push_back(commands[i]->substitute(names, values));
+        here;
       }
       here;
       return move(b);
@@ -1275,7 +1298,7 @@ namespace ExpParser
     virtual string tostring() {
       string s = "{\n";
       for(unsigned int i = 0; i < commands.size(); i++)
-	s += commands[i]->tostring() + "\n";
+        s += commands[i]->tostring() + "\n";
       s += "}\n";
       return s;
     }
@@ -1284,7 +1307,7 @@ namespace ExpParser
       int length = env.names.size();
       here;
       for(unsigned int i = 0; i < commands.size(); i++)
-	commands[i]->eval(env);
+        commands[i]->eval(env);
       //cout << env.names.size() << endl;
       //cout << env.values.size() << endl;
       env.names.resize(length);
@@ -1316,10 +1339,10 @@ namespace ExpParser
       vector<string> subnames;
       vector<unique_ptr<Expr>> subvalues;
       for(unsigned int i = 0; i < names.size(); i++)
-	if (names[i] != variable){
-	  subnames.push_back(names[i]);
-	  subvalues.push_back(values[i]->copy());
-	}
+        if (names[i] != variable){
+          subnames.push_back(names[i]);
+          subvalues.push_back(values[i]->copy());
+        }
       result->variable = variable;
       result->seq = seq->substitute(subnames, subvalues);
       result->command = command->substitute(subnames, subvalues);
@@ -1332,16 +1355,16 @@ namespace ExpParser
       //      Value* seqvalue = seq->eval(env);
       ValueAny<vector<Value*>*>* seqvalue = dynamic_cast<ValueAny<vector<Value*>*>*>(seq->eval(env));
       if (seqvalue == 0)
-	faileval;
+        faileval;
       vector<Value*>* vect = seqvalue->value;
       int length = env.names.size();
       env.names.push_back(variable);
       env.values.push_back(unit);
       for(unsigned int i = 0; i < vect->size(); i++)
-	{
-	  env.values[length] = (*vect)[i];
-	  command->eval(env);
-	}
+        {
+          env.values[length] = (*vect)[i];
+          command->eval(env);
+        }
       env.names.resize(length);
       env.values.resize(length);
       return unit;
@@ -1370,10 +1393,10 @@ namespace ExpParser
     }
     virtual Value* eval(Env& env){
       while(cond->eval(env)->get_int() != 0){
-	int length = env.names.size();
-	command->eval(env);
-	env.names.resize(length);
-	env.values.resize(length);
+        int length = env.names.size();
+        command->eval(env);
+        env.names.resize(length);
+        env.values.resize(length);
       }
       return unit;
     }
@@ -1404,9 +1427,9 @@ namespace ExpParser
     }
     virtual Value* eval(Env& env){
       if(cond->eval(env)->get_int() != 0)
-	return commandt->eval(env);
+        return commandt->eval(env);
       else
-	return commande->eval(env);
+        return commande->eval(env);
     }
   };
 
@@ -1422,14 +1445,14 @@ namespace ExpParser
     ParserUnaryOps(string ops, Parser* rec){this->ops = ops; this->rec = rec;}
     unique_ptr<Expr> parse(string s, int& nextPos){
       if (HasToken(s, nextPos, "-")){
-	if (!HasToken(s, nextPos))
-	  failparse;
-	unique_ptr<Expr> f1 = rec->parse(s, nextPos);
-	unique_ptr<Func> result(new Func);
-	result->name = "-";
-	result->isFunction = true;
-	result->parameters.push_back(move(f1));
-	return move(result);
+        if (!HasToken(s, nextPos))
+          failparse;
+        unique_ptr<Expr> f1 = rec->parse(s, nextPos);
+        unique_ptr<Func> result(new Func);
+        result->name = "-";
+        result->isFunction = true;
+        result->parameters.push_back(move(f1));
+        return move(result);
       }
       return rec->parse(s, nextPos);
     }
@@ -1444,24 +1467,24 @@ namespace ExpParser
     unique_ptr<Expr> parse(string s, int& nextPos){
       unique_ptr<Expr> f1 = rec->parse(s, nextPos);
       while(true){
-	if (!HasToken(s, nextPos))
-	  return f1;
-	int innerNextPos = nextPos;
-	unique_ptr<token> tok = NextToken(s, innerNextPos);
-	if (tok->type == Op && tok->s.length() == 1 && ops.find(tok->s) != string::npos){
-	  innerNextPos = tok->nextPos;
-	  unique_ptr<Expr> f2 = rec->parse(s, innerNextPos);
-	  unique_ptr<Func> result(new Func);
-	  result->isInfix = true;
-	  result->isFunction = true;
-	  result->name = tok->s;
-	  nextPos = innerNextPos;
-	  result->parameters.push_back(move(f1));
-	  result->parameters.push_back(move(f2));
-	  f1 = move(result);
-	}
-	else
-	  break;
+        if (!HasToken(s, nextPos))
+          return f1;
+        int innerNextPos = nextPos;
+        unique_ptr<token> tok = NextToken(s, innerNextPos);
+        if (tok->type == Op && tok->s.length() == 1 && ops.find(tok->s) != string::npos){
+          innerNextPos = tok->nextPos;
+          unique_ptr<Expr> f2 = rec->parse(s, innerNextPos);
+          unique_ptr<Func> result(new Func);
+          result->isInfix = true;
+          result->isFunction = true;
+          result->name = tok->s;
+          nextPos = innerNextPos;
+          result->parameters.push_back(move(f1));
+          result->parameters.push_back(move(f2));
+          f1 = move(result);
+        }
+        else
+          break;
       }
       return f1;
     }
@@ -1520,7 +1543,7 @@ namespace ExpParser
       unique_ptr<Func> result(new Func);
       recPar = parse(s, nextPos);
       if (!HasToken(s, nextPos, ")"))
-	faileval;
+        faileval;
       result->parameters.push_back(move(recPar));
       result->isFunction = true;
       return move(result);
@@ -1532,32 +1555,32 @@ namespace ExpParser
       break;
     case Ident:
       {
-	unique_ptr<Func> result(new Func);
-	result->name = tok->s;
-	nextPos = tok->nextPos;
-	if (!HasToken(s, tok->nextPos))
-	  return move(result);
-	if (HasToken(s, nextPos, "(")){
-	  result->isFunction = true;
-	  //int innerNextPos = nextPos;
-	  while(stackNotCommaClosePar(s, nextPos, result->parameters));
-	  //	nextPos = innerNextPos;
-	}// else if (HasToken(s, nextPos, ".")){
-	//   unique_ptr<string> f = getvar(s, nextPos);
-	//   if (f == 0)
-	//     failparse;
-	//   result->isFunction = true;
-	//   unique_ptr<Func> inside(new Func);
-	//   inside->name = tok->s;
-	//   result->parameters.push_back(move(inside));
-	//   result->name = *f;
-	//   if (!HasToken(s, nextPos, "("))
-	//     failparse;
-	//   //int innerNextPos = nextPos;
-	//   while(stackNotCommaClosePar(s, nextPos, result->parameters));
-	//   //nextPos = innerNextPos;
-	// }
-	return move(result);
+        unique_ptr<Func> result(new Func);
+        result->name = tok->s;
+        nextPos = tok->nextPos;
+        if (!HasToken(s, tok->nextPos))
+          return move(result);
+        if (HasToken(s, nextPos, "(")){
+          result->isFunction = true;
+          //int innerNextPos = nextPos;
+          while(stackNotCommaClosePar(s, nextPos, result->parameters));
+          //    nextPos = innerNextPos;
+        }// else if (HasToken(s, nextPos, ".")){
+        //   unique_ptr<string> f = getvar(s, nextPos);
+        //   if (f == 0)
+        //     failparse;
+        //   result->isFunction = true;
+        //   unique_ptr<Func> inside(new Func);
+        //   inside->name = tok->s;
+        //   result->parameters.push_back(move(inside));
+        //   result->name = *f;
+        //   if (!HasToken(s, nextPos, "("))
+        //     failparse;
+        //   //int innerNextPos = nextPos;
+        //   while(stackNotCommaClosePar(s, nextPos, result->parameters));
+        //   //nextPos = innerNextPos;
+        // }
+        return move(result);
       }
       break;
     case StringCst:
@@ -1580,9 +1603,9 @@ namespace ExpParser
       unique_ptr<Comp> result(new Comp);
       unique_ptr<string> f = getvar(s, nextPos);
       if (f == 0)
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos, "("))
-	failparse;
+        failparse;
       result->v = move(recPar);
       result->member = *f;
       while(stackNotCommaClosePar(s, nextPos, result->parameters));
@@ -1615,26 +1638,26 @@ namespace ExpParser
       unique_ptr<Definition> def(new Definition);
       unique_ptr<string> varName = getvar(s, nextPos);
       if (varName == 0)
-	failparse;
+        failparse;
       if (HasToken(s, nextPos, "(")){
-	def->isFunction = true;
-	if (!HasToken(s, nextPos, ")"))
-	  while(true){
-	    unique_ptr<string> paramName = getvar(s, nextPos);
-	    if (paramName == 0)
-	      failparse;
-	    def->parameters.push_back(*paramName);
-	    if (!HasToken(s, nextPos, ",")){
-	      if (HasToken(s, nextPos, ")"))
-		break;
-	      failparse;
-	    }
-	  }
+        def->isFunction = true;
+        if (!HasToken(s, nextPos, ")"))
+          while(true){
+            unique_ptr<string> paramName = getvar(s, nextPos);
+            if (paramName == 0)
+              failparse;
+            def->parameters.push_back(*paramName);
+            if (!HasToken(s, nextPos, ",")){
+              if (HasToken(s, nextPos, ")"))
+                break;
+              failparse;
+            }
+          }
       }
       if (!HasToken(s, nextPos, "="))
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos))
-	failparse;
+        failparse;
       unique_ptr<Expr> e = parseCommand(s, nextPos);
       // cout << "===" << e->tostring() << " " << (e->kind == ExFunc ? "fun" : "not fun") << endl;
       // unique_ptr<Func> ee = e->FuncMe();
@@ -1649,14 +1672,14 @@ namespace ExpParser
     else if (HasToken(s, nextPos, "set")){
       unique_ptr<string> varName = getvar(s, nextPos);
       if (varName == 0)
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos, "="))
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos))
-	failparse;
+        failparse;
       unique_ptr<Expr> e = parse(s, nextPos);
       if (!HasToken(s, nextPos, ";"))
-	failparse;
+        failparse;
       unique_ptr<Assign> def (new Assign);
       def->name = *varName;
       def->value = move(e);
@@ -1665,22 +1688,22 @@ namespace ExpParser
     else if (HasToken(s, nextPos, "{")){
       unique_ptr<Expr> c = parseCommands(s, nextPos);
       if (!HasToken(s, nextPos, "}"))
-	failparse;
+        failparse;
       return c;
     }
     else if (HasToken(s, nextPos, "for")){
       if (!HasToken(s, nextPos, "("))
-	failparse;
+        failparse;
       unique_ptr<string> varName = getvar(s, nextPos);
       if (varName == 0)
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos, "in"))
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos))
-	failparse;
+        failparse;
       unique_ptr<Expr> e = parse(s, nextPos);
       if (!HasToken(s, nextPos, ")"))
-	failparse;
+        failparse;
       unique_ptr<Expr> c = parseCommand(s, nextPos);
       unique_ptr<For> fc (new For);
       fc->variable = *varName;
@@ -1690,12 +1713,12 @@ namespace ExpParser
     }
     else if (HasToken(s, nextPos, "while")){
       if (!HasToken(s, nextPos, "("))
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos))
-	failparse;
+        failparse;
       unique_ptr<Expr> cond = parse(s, nextPos);
       if (!HasToken(s, nextPos, ")"))
-	failparse;
+        failparse;
       unique_ptr<Expr> c = parseCommand(s, nextPos);
       unique_ptr<While> fc (new While);
       fc->cond = move(cond);
@@ -1704,15 +1727,15 @@ namespace ExpParser
     }
     else if (HasToken(s, nextPos, "if")){
       if (!HasToken(s, nextPos, "("))
-	failparse;
+        failparse;
       if (!HasToken(s, nextPos))
-	failparse;
+        failparse;
       unique_ptr<Expr> cond = parse(s, nextPos);
       if (!HasToken(s, nextPos, ")"))
-	failparse;
+        failparse;
       unique_ptr<Expr> ct = parseCommand(s, nextPos);
       if (!HasToken(s, nextPos, "else"))
-	failparse;
+        failparse;
       unique_ptr<Expr> ce = parseCommand(s, nextPos);
       unique_ptr<Ifte> fc (new Ifte);
       fc->cond = move(cond);
@@ -1738,7 +1761,7 @@ namespace ExpParser
     while(HasToken(s, pos)){
       int innerPos = pos;
       if(HasToken(s, innerPos, "}"))
-	break;
+        break;
       commands.push_back(parseCommand(s, pos));
     }
     unique_ptr<Block> block (new Block);
@@ -1769,9 +1792,9 @@ namespace ExpParser
   //   if (func->isInfix){
   //     unsigned int size = func->parameters.size();
   //     for(unsigned int i = 0; i < size; i++){
-  // 	pp(func->parameters[i]);
-  // 	if (i < size - 1)
-  // 	  cout << " " << func->name << " ";
+  //    pp(func->parameters[i]);
+  //    if (i < size - 1)
+  //      cout << " " << func->name << " ";
   //     }
   //     return;
   //   }
@@ -1781,9 +1804,9 @@ namespace ExpParser
   //   unsigned int size = func->parameters.size();
   //   for(unsigned int i = 0; i < size; i++)
   //     {
-  // 	pp(func->parameters[i]);
-  // 	if (i < size - 1)
-  // 	  cout << ", ";
+  //    pp(func->parameters[i]);
+  //    if (i < size - 1)
+  //      cout << ", ";
   //     }
   //   if (func->isFunction)
   //     cout << ")";
@@ -1792,14 +1815,14 @@ namespace ExpParser
   ValueAny<double>* doubleValue(Value* p){
       ValueAny<int>* pi = dynamic_cast<ValueAny<int>*>(p);
       if (pi != 0)
-	return new ValueAny<double>(pi->value, pi->s);
+        return new ValueAny<double>(pi->value, pi->s);
       return dynamic_cast<ValueAny<double>*>(p);
   }
 
   ValueAny<int>* intValue(Value* p){
       ValueAny<double>* pd = dynamic_cast<ValueAny<double>*>(p);
       if (pd != 0)
-	return new ValueAny<int>(pd->value);
+        return new ValueAny<int>(pd->value);
       return dynamic_cast<ValueAny<int>*>(p);
   }
 
@@ -1807,7 +1830,7 @@ namespace ExpParser
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 2)
-	faileval
+        faileval
       Value* p1 = parameters[0];
       Value* p2 = parameters[1];
       ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1);
@@ -1815,30 +1838,30 @@ namespace ExpParser
       ValueAny<int>* p2i = dynamic_cast<ValueAny<int>*>(p2);
       ValueAny<string>* p2s = dynamic_cast<ValueAny<string>*>(p2);
       if (p1s != 0 && p2s != 0)
-	return new ValueAny<string>(p1s->value + p2s->value, p1s->value + p2s->value);
+        return new ValueAny<string>(p1s->value + p2s->value, p1s->value + p2s->value);
       else if (p1i != 0 && p2i != 0)
-	return new ValueAny<int>(p1i->value + p2i->value, p1i->s + p2i->s);
+        return new ValueAny<int>(p1i->value + p2i->value, p1i->s + p2i->s);
       ValueAny<double>* p1d = doubleValue(p1);
       if (p1d == 0)
-	faileval;
+        faileval;
       ValueAny<double>* p2d = doubleValue(p2);
       if (p2d == 0)
-	faileval;
+        faileval;
       return new ValueAny<double>(p1d->value + p2d->value, "double value");
       
 
       // if (!(p1->isNum && p2->isNum))
-      // 	faileval;
+      //        faileval;
       // if (p1->kind == Int && p2->kind == Int)
-      // 	return new Value(p1->intValue + p2->intValue);
+      //        return new Value(p1->intValue + p2->intValue);
       // return new Value(p1->doubleValue + p2->doubleValue);
 
       // if (p1->kind == p2->kind && p1->kind == String)
-      // 	new Value(p1->stringValue + p2->stringValue);
+      //        new Value(p1->stringValue + p2->stringValue);
       // else if (!(p1->isNum && p2->isNum))
-      // 	faileval;
+      //        faileval;
       // if (p1->kind == Int && p2->kind == Int)
-      // 	return new Value(p1->intValue + p2->intValue);
+      //        return new Value(p1->intValue + p2->intValue);
       // return new Value(p1->doubleValue + p2->doubleValue);
     }
     FPlus(){
@@ -1850,30 +1873,30 @@ namespace ExpParser
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() == 1)
-  	{
-	  Value* p1 = parameters[0];
-	  ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1);
-	  if (p1i != 0)
-	    return new ValueAny<int>(-p1i->value);
-	  ValueAny<double>* p1d = dynamic_cast<ValueAny<double>*>(p1);
-	  if (p1d != 0)
-	    return new ValueAny<double>(-p1d->value);
-	  faileval;
-	}
+        {
+          Value* p1 = parameters[0];
+          ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1);
+          if (p1i != 0)
+            return new ValueAny<int>(-p1i->value);
+          ValueAny<double>* p1d = dynamic_cast<ValueAny<double>*>(p1);
+          if (p1d != 0)
+            return new ValueAny<double>(-p1d->value);
+          faileval;
+        }
       else if (parameters.size() != 2)
-  	faileval;
+        faileval;
       Value* p1 = parameters[0];
       Value* p2 = parameters[1];
       ValueAny<int>* p1i = dynamic_cast<ValueAny<int>*>(p1);
       ValueAny<int>* p2i = dynamic_cast<ValueAny<int>*>(p2);
       if (p1i != 0 && p2i != 0)
-	return new ValueAny<int>(p1i->value - p2i->value);
+        return new ValueAny<int>(p1i->value - p2i->value);
       ValueAny<double>* p1d = doubleValue(p1);
       if (p1d == 0)
-	faileval;
+        faileval;
       ValueAny<double>* p2d = doubleValue(p2);
       if (p2d == 0)
-	faileval;
+        faileval;
       return new ValueAny<double>(p1d->value - p2d->value);
     }
     FMinus(){
@@ -1959,24 +1982,24 @@ public: \
     Value* eval(vector<Value*>& parameters){
       int start, step, stop;
       if (parameters.size() == 2){
-	check_parameters(2);
-	getint(p0);
-	getint(p1);
-	start = p0;
-	stop = p1;
-	step = 1;
+        check_parameters(2);
+        getint(p0);
+        getint(p1);
+        start = p0;
+        stop = p1;
+        step = 1;
       } else{
-	check_parameters(3);
-	getint(p0);
-	getint(p1);
-	getint(p2);
-	start = p0;
-	stop = p2;
-	step = p1;
+        check_parameters(3);
+        getint(p0);
+        getint(p1);
+        getint(p2);
+        start = p0;
+        stop = p2;
+        step = p1;
       }
       vector<Value*>* v = new vector<Value*>;
       for (int i = start; i <= stop; i += step)
-	v->push_back(new ValueAny<int>(i));
+        v->push_back(new ValueAny<int>(i));
       return new ValueAny<vector<Value*>*>(v, vectorinttype);
     }
     FSeq(){
@@ -1994,23 +2017,23 @@ public: \
       boost::filesystem::path directory = boost::filesystem::path(dirname);
       vector<string> files;
       if( exists( directory ) )
-      	{
-      	  boost::filesystem::directory_iterator end ;
-      	  for( boost::filesystem::directory_iterator iter(directory) ; iter != end ; ++iter )
-      	    if ( boost::filesystem::is_directory( *iter ) )
-      	      {
-      		//cout << iter->native_directory_string() << " (directory)\n" ;
-      		//if( recurse_into_subdirs ) show_files(*iter) ;
-      	      }
-      	    else{
-	      files.push_back(iter->path().string());
-	    }
-      	}
+        {
+          boost::filesystem::directory_iterator end ;
+          for( boost::filesystem::directory_iterator iter(directory) ; iter != end ; ++iter )
+            if ( boost::filesystem::is_directory( *iter ) )
+              {
+                //cout << iter->native_directory_string() << " (directory)\n" ;
+                //if( recurse_into_subdirs ) show_files(*iter) ;
+              }
+            else{
+              files.push_back(iter->path().string());
+            }
+        }
       sort(files.begin(), files.end());
       vector<Value*>* v = new vector<Value*>;
       for(unsigned int i = 0; i < files.size(); i++){
-	//	cout << files[i] << " (file)\n" ;
-	v->push_back(new ValueAny<string>(files[i], files[i]));
+        //      cout << files[i] << " (file)\n" ;
+        v->push_back(new ValueAny<string>(files[i], files[i]));
       }
       return new ValueAny<vector<Value*>*>(v, vectorinttype);
     }
@@ -2041,6 +2064,29 @@ public: \
       name = "plane";
     }
   } fplane;
+
+
+  class FImageplane: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(8);
+      getany(Image::MyMesh*,scene);
+      getany(CImg<unsigned char>*,texture);
+      getint(sizex);
+      getint(sizey);
+      getint(x);
+      getint(y);
+      getint(z);
+      getdouble(opacity);
+      unique_ptr<Image::MyMesh> imageplane = Image::fmimageplane(sizex, sizey, x, y, z, *texture, opacity);
+      cout << "MESH" << imageplane->primitives.size() << endl;
+      Image::append(scene, imageplane);
+      return unit;
+    }
+    FImageplane(){
+      name = "imageplane";
+    }
+  } fimageplane;
 
   class FHPlane: public ExpParser::member<Value> {
   public:
@@ -2082,7 +2128,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 0)
-  	faileval;
+        faileval;
       return newmesh(new Image::MyMesh);
     }
     FNewmesh(){
@@ -2140,7 +2186,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() <= 1)
-  	faileval;
+        faileval;
       unsigned int n = 0;
       getany(Image::MetaMetaBall*,balls);
       getdouble(radius);
@@ -2149,8 +2195,8 @@ public: \
       Image::MetaBall* ball = new Image::MetaBall();
       ball->color = color;
       while(n < parameters.size()){
-	getany(Image::supportPoint*, point);
-	ball->add(point, radius, threshold);
+        getany(Image::supportPoint*, point);
+        ball->add(point, radius, threshold);
       }
       balls->add(ball);
       return unit;//new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
@@ -2180,7 +2226,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 0)
-  	faileval;
+        faileval;
       ValueAny<Image::MetaMetaBall*>* result = new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
       result->members.push_back(&fnewmetaball);
       result->members.push_back(&fmetaballsmesh);
@@ -2288,12 +2334,12 @@ public: \
       getint(size_y);
       CImg<unsigned char>* image;
       if (size_x == -50 && size_y == -50)
-	image = new CImg<unsigned char>(img->get_resize_halfXY());
+        image = new CImg<unsigned char>(img->get_resize_halfXY());
       else
       if (size_x == -200 && size_y == -200)
-	image = new CImg<unsigned char>(img->get_resize_doubleXY());
+        image = new CImg<unsigned char>(img->get_resize_doubleXY());
       else
-	image = new CImg<unsigned char>(img->get_resize(size_x, size_y));
+        image = new CImg<unsigned char>(img->get_resize(size_x, size_y));
       return newimage(image);
     }
     Fresize(){
@@ -2397,28 +2443,28 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       if(parameters.size() == 7){
-	check_parameters(7);
-	getptr(CImg<unsigned char>,cimguchar,img);
-	getint(x);
-	getint(y);
-	getany(string,s);
-	getptr(CImg<unsigned char>,fcolor.name,color);
-	getdouble(opacity);
-	getint(size);
-	img->draw_text(x, y, s.data(), color->data(), 0,(float)opacity, size);
-	return unit;
+        check_parameters(7);
+        getptr(CImg<unsigned char>,cimguchar,img);
+        getint(x);
+        getint(y);
+        getany(string,s);
+        getptr(CImg<unsigned char>,fcolor.name,color);
+        getdouble(opacity);
+        getint(size);
+        img->draw_text(x, y, s.data(), color->data(), 0,(float)opacity, size);
+        return unit;
       }
-	check_parameters(8);
-	getptr(CImg<unsigned char>,cimguchar,img);
-	getint(x);
-	getint(y);
-	getany(string,s);
-	getptr(CImg<unsigned char>,fcolor.name,color);
-	getptr(CImg<unsigned char>,fcolor.name,bgcolor);
-	getdouble(opacity);
-	getint(size);
-	img->draw_text(x, y, s.data(), color->data(), bgcolor->data(),(float)opacity, size);
-	//      img->draw_text(3,3,"Mouse buttons\nto zoom in/out",color,0,0.8f,24)
+        check_parameters(8);
+        getptr(CImg<unsigned char>,cimguchar,img);
+        getint(x);
+        getint(y);
+        getany(string,s);
+        getptr(CImg<unsigned char>,fcolor.name,color);
+        getptr(CImg<unsigned char>,fcolor.name,bgcolor);
+        getdouble(opacity);
+        getint(size);
+        img->draw_text(x, y, s.data(), color->data(), bgcolor->data(),(float)opacity, size);
+        //      img->draw_text(3,3,"Mouse buttons\nto zoom in/out",color,0,0.8f,24)
       return unit;
     }
     Ftext(){
@@ -2430,7 +2476,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 1)
-	faileval;
+        faileval;
       string s = parameters[0]->tostring();
       return new ValueAny<string>(s, s);
     }
@@ -2446,10 +2492,10 @@ public: \
 
     for (unsigned int iter = 0; !disp.is_closed() && !disp.is_keyQ() && !disp.is_keyESC(); ++iter, zoom+=0.2f) {
       img.draw_image((img.width() - noise.width())/2,
-		     (img.height() - noise.height())/2,
-		     noise.fill(0).noise(255,1)).
-	rotate((float)(10*std::sin(iter/25.0)),0.5f*img.width(),0.5f*img.height(),(float)(1.04f + 0.02f*std::sin(zoom/10)),0,0).
-	resize(disp.resize(false)).display(disp.wait(25));
+                     (img.height() - noise.height())/2,
+                     noise.fill(0).noise(255,1)).
+        rotate((float)(10*std::sin(iter/25.0)),0.5f*img.width(),0.5f*img.height(),(float)(1.04f + 0.02f*std::sin(zoom/10)),0,0).
+        resize(disp.resize(false)).display(disp.wait(25));
       if (disp.is_keyCTRLLEFT() && disp.is_keyF()) disp.resize(400,400,false).toggle_fullscreen(false);
     }
     return 0;
@@ -2522,7 +2568,7 @@ public: \
     Value* eval(vector<Value*>& parameters){
       auto result = new vector<Value*>;
       for (unsigned int i = 0; i < parameters.size(); i++)
-	result->push_back(parameters[i]);
+        result->push_back(parameters[i]);
       return newvector(result);
     }
     Fnewvector(){
@@ -2559,6 +2605,7 @@ public: \
 
   ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point){
     ValueAny<Image::MyMesh*>* v = new ValueAny<Image::MyMesh*>(point, "point");
+    v->members.push_back(&fimageplane);
     v->members.push_back(&fplane);
     v->members.push_back(&fhplane);
     v->members.push_back(&fshow);
