@@ -11,10 +11,6 @@
 #include <boost/lexical_cast.hpp>
 #include <typeinfo>
 #include <memory>
-//#include <dirent.h>
-
-//#include <boost/filesystem/operations.hpp>
-//#include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem.hpp>
 
 #ifndef cimg_imagepath
@@ -26,9 +22,8 @@
 #define here //{cout << "Here: " << __LINE__ << endl;}
 
 #define check_parameters(siz) if (parameters.size() != siz) faileval;int n = 0;
-//#define getptr(t,tt,v) if(parameters[n]->kind != Ptr || parameters[n]->ptr_kind != tt) faileval;t* v = (t*)parameters[n]->ptr;n++;
 #define getany(any,v) ValueAny<any>* v ## ptr = dynamic_cast<ValueAny<any>*>(parameters[n]); if (v ## ptr == 0) faileval; any v = v ## ptr->value; n++;
-#define getptr(any,t,v) getany(any*,v)
+#define getptr(any,v) getany(any*,v)
 #define getdouble(v) ValueAny<double>* v ## ddd = doubleValue(parameters[n]); if (v ## ddd == 0) faileval; double v = v ## ddd->value; n++;
 #define getint(v) ValueAny<int>* v ## ddd = intValue(parameters[n]); if (v ## ddd == 0) faileval; int v = v ## ddd->value; n++;
 
@@ -40,8 +35,6 @@
 
 using namespace std;
 using namespace cimg_library;
-//using namespace boost::filesystem;
-
 
 void handler(int sig) {
 
@@ -63,108 +56,6 @@ void handler(int sig) {
 
 namespace Image
 {
-  // bool loadOBJ(
-  //           const char * path,
-  //           std::vector < glm::vec3 > & out_vertices,
-  //           std::vector < glm::vec2 > & out_uvs,
-  //           std::vector < glm::vec3 > & out_normals
-  //           )
-  // {
-  //   std::vector< unsigned int > vertexIndices, uvIndices, normalIndices;
-  //   std::vector< glm::vec3 > temp_vertices;
-  //   std::vector< glm::vec2 > temp_uvs;
-  //   std::vector< glm::vec3 > temp_normals;
-
-  //   FILE * file = fopen(path, "r");
-  //   if( file == NULL ){
-  //     printf("Impossible to open the file !\n");
-  //     return false;
-  //   }
-
-  //   while( 1 ){
-
-  //     char lineHeader[128];
-  //     // read the first word of the line
-  //     int res = fscanf(file, "%s", lineHeader);
-  //     if (res == EOF)
-  //    break; // EOF = End Of File. Quit the loop.
-
-  //     // else : parse lineHeader
-
-  //     if ( strcmp( lineHeader, "v" ) == 0 ){
-  //    glm::vec3 vertex;
-  //    fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
-  //    temp_vertices.push_back(vertex);
-
-  //     }else if ( strcmp( lineHeader, "vt" ) == 0 ){
-  //    glm::vec2 uv;
-  //    fscanf(file, "%f %f\n", &uv.x, &uv.y );
-  //    temp_uvs.push_back(uv);
-
-  //     }else if ( strcmp( lineHeader, "vn" ) == 0 ){
-  //    glm::vec3 normal;
-  //    fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
-  //    temp_normals.push_back(normal);
-  //     }else if ( strcmp( lineHeader, "f" ) == 0 ){
-  //    std::string vertex1, vertex2, vertex3;
-  //    unsigned int vertexIndex[3], uvIndex[3], normalIndex[3];
-  //    int matches = fscanf(file, "%d/%d/%d %d/%d/%d %d/%d/%d\n", &vertexIndex[0], &uvIndex[0], &normalIndex[0], &vertexIndex[1], &uvIndex[1], &normalIndex[1], &vertexIndex[2], &uvIndex[2], &normalIndex[2] );
-  //    if (matches != 9){
-  //      printf("File can't be read by our simple parser : ( Try exporting with other options\n");
-  //      return false;
-  //    }
-  //    vertexIndices.push_back(vertexIndex[0]);
-  //    vertexIndices.push_back(vertexIndex[1]);
-  //    vertexIndices.push_back(vertexIndex[2]);
-  //    uvIndices    .push_back(uvIndex[0]);
-  //    uvIndices    .push_back(uvIndex[1]);
-  //    uvIndices    .push_back(uvIndex[2]);
-  //    normalIndices.push_back(normalIndex[0]);
-  //    normalIndices.push_back(normalIndex[1]);
-  //    normalIndices.push_back(normalIndex[2]);
-
-  //    // For each vertex of each triangle
-  //    for( unsigned int i=0; i<vertexIndices.size(); i++ ){
-
-  //      unsigned int vertexIndex = vertexIndices[i];
-
-  //      glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
-
-  //      out_vertices.push_back(vertex);
-
-  //      // Read our .obj file
-  //      std::vector< glm::vec3 > vertices;
-  //      std::vector< glm::vec2 > uvs;
-  //      std::vector< glm::vec3 > normals; // Won't be used at the moment.
-  //      bool res = loadOBJ("cube.obj", vertices, uvs, normals);
-
-  //      glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
-  //    }
-  //     }
-  //   }
-
-  void plot2d(int argc, char **argv){
-    const char* expression = "2 * x";
-    const char *const formula = cimg_option("-f",expression,"Formula to plot");
-    const float x0 = cimg_option("-x0", -5.0f, "Minimal X-value");
-    const float x1 = cimg_option("-x1", 5.0f, "Maximal X-value");
-    const int resolution = cimg_option("-r",1024,"Plot resolution");
-    const unsigned int nresolution = resolution > 1 ? resolution:1024;
-    const unsigned int plot_type = cimg_option("-p", 1, "Plot type");
-    const unsigned int vertex_type = cimg_option("-v", 1, "Vertex type");
-
-    // Create plot data.
-    CImg<double> values(4,nresolution,1,1,0);
-    const unsigned int r = nresolution - 1;
-    cimg_forY(values,X) values(0,X) = x0 + X*(x1-x0)/r;
-    cimg::eval(formula,values).move_to(values);
-
-    // Display interactive plot window.
-    CImg<double> graph = values.display_graph(formula,plot_type,vertex_type,"X-axis",x0,x1,"Y-axis");
-    graph.save_bmp("/home/fmaurel/prog/spark/test1.bmp");
-  }
-
-
   struct Plane3d {
     typedef typename cimg::last<float,float>::type floatT;
 
@@ -263,14 +154,6 @@ namespace Image
     }
   } plane3d;
 
-
-  // struct fm3d {
-  //   CImgList<unsigned int> prims;
-  //   CImg<float> pts;
-  //   CImgList<unsigned char> cols;
-  //   CImg<float> opacities;
-  // };
-
   class MyMesh{
   public:
     CImg<float> vertices;
@@ -330,14 +213,14 @@ namespace Image
       //cout << "draw3" << endl;
       //      cout << "CC" << endl;
     }
-  };
 
-  void show(MyMesh* scene){
-    const CImg<unsigned char> visu = CImg<unsigned char>(3,512,512,1).fill(230,230,255).permute_axes("yzcx");
-    CImg<float> view_matrix = CImg<>::identity_matrix(4);
-    visu.display_object3d("SP 1",scene->vertices,scene->primitives,scene->colors,scene->opacities,true,4,4,false,
-                          500.0f,0,0,-5000,0.5f,0.1f,true,view_matrix.data());
-  }
+    void show(){
+      const CImg<unsigned char> visu = CImg<unsigned char>(3,512,512,1).fill(230,230,255).permute_axes("yzcx");
+      CImg<float> view_matrix = CImg<>::identity_matrix(4);
+      visu.display_object3d("SP 1",vertices,primitives,colors,opacities,true,4,4,false,
+			    500.0f,0,0,-5000,0.5f,0.1f,true,view_matrix.data());
+    }
+  };
 
   unique_ptr<MyMesh> fmimageplane(const float size_x, const float size_y, const int x, const int y, const  int z, CImg<unsigned char> &texture, float opacity){
     CImgList<float> prims;
@@ -390,11 +273,7 @@ namespace Image
 
   void append(MyMesh* scene, unique_ptr<MyMesh>& other){
     scene->vertices = scene->vertices.append_object3d(scene->primitives, other->vertices, other->primitives);
-    //  scene->colors.insert(other->colors);
     scene->colors=(+scene->colors, other->colors);
-
-    //scene->opacities =
-    //  scene->opacities.append(other->opacities);
     scene->opacities=(scene->opacities, other->opacities)>'x';
   }
 
@@ -433,7 +312,6 @@ namespace Image
     }
   };
 
-
   class MetaBall {
   public:
     vector<Ball*> balls;
@@ -460,12 +338,8 @@ namespace Image
 
   class MetaMetaBall {
   private:
-    //vector<supportPoint> support;
     vector<MetaBall*> balls;
   public:
-    //    void add(float x, float y, float z, float r, float threshold){
-    //  balls.push_back(new Metaball(x, y, z, r, threshold));
-    //}
     void add(MetaBall* ball){
       balls.push_back(ball);
     }
@@ -482,7 +356,6 @@ namespace Image
       MyMesh* result = new MyMesh();
       result->vertices = CImg<>::isosurface3d(result->primitives,*this,target,-r,-r,-r,r,r,r,sub);
       result->primitives.reverse_object3d();
-
       for(unsigned int i = 0; i < result->primitives.size(); i++){
         float weight = 0.00001;
         float r = 0;
@@ -683,8 +556,6 @@ namespace ExpParser
         tok->s = s.substr(pos + 1, len - 2);
       //cout << "STRING " << pos << " " << len << " " << tok->s << endl;
     }
-
-
     return tok;
   }
 
@@ -801,78 +672,6 @@ namespace ExpParser
       faileval;
     }
   };
-
-  // template<typename T>
-  // class ValueFM: public Value {
-  // public:
-  //   bool isNum;
-  //   int intValue;
-  //   double doubleValue;
-  //   string stringValue;
-  //   unique_ptr<Expr> funcValue;
-  //   vector<string> parameters;
-  //   void* ptr;
-  //   string ptr_kind;
-  // public:
-  //   Kind kind;
-  //   ValueFM(int v){
-  //     isNum = true;
-  //     kind = Int;
-  //     doubleValue = v;
-  //     intValue = v;
-  //   }
-  //   ValueFM(double v){
-  //     isNum = true;
-  //     kind = Double;
-  //     intValue = (int)v;
-  //     doubleValue = v;
-  //   }
-  //   ValueFM(string v){
-  //     isNum = false;
-  //     kind = String;
-  //     stringValue = v;
-  //   }
-  //   ValueFM(unique_ptr<Expr>& f, vector<string> params){
-  //     isNum = false;
-  //     kind = Function;
-  //     funcValue = move(f);
-  //     parameters = params;
-  //   }
-  //   ValueFM(void* v, string k){
-  //     isNum = false;
-  //     kind = Ptr;
-  //     ptr_kind = k;
-  //     ptr = v;
-  //   }
-  //   string tostring(){
-  //     char output[1024];
-  //     switch(kind){
-  //     case Int:
-  //       sprintf(output, "%i", intValue);
-  //    //cout << output << " !!" << endl;
-  //    return output;
-  //    break;
-  //     case Double:
-  //       sprintf(output, "%g", doubleValue);
-  //    return output;
-  //    break;
-  //     case String:
-  //    return stringValue;
-  //    break;
-  //     case Function:
-  //    return "<fun>";
-  //    break;
-  //     // case Cimg_char:
-  //     //     return "< ?? >";
-  //     //     break;
-  //     case Ptr:
-  //    return "<" + ptr_kind + ">";
-  //    break;
-  //     }
-  //     cout << "Kind" << kind << endl;
-  //     faileval;
-  //   }
-  // };
 
   Value* unit = new ValueAny<int>(0, "unit");
 
@@ -1308,18 +1107,12 @@ namespace ExpParser
       here;
       for(unsigned int i = 0; i < commands.size(); i++)
         commands[i]->eval(env);
-      //cout << env.names.size() << endl;
-      //cout << env.values.size() << endl;
       env.names.resize(length);
       env.values.resize(length);
       here;
       return unit;
     }
   };
-
-  string vectorinttype = "vector<int>";
-  string cimguchar = "CImg<unsigned char>";
-  string mymeshtype = "MyMesh";
 
   class For: public Expr {
   public:
@@ -1956,26 +1749,20 @@ public: \
   binop(FTimes,ftimes,"*",*);
   binop(FDiv,fdiv,"/",/);
 
-  ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point);
-  ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point);
-  ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point);
   ValueAny<vector<Value*>*>* newvector(vector<Value*>* point);
 
-  class FColor: public ExpParser::FValue {
+  class Fstring: public ExpParser::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(3);
-      getint(p1);
-      getint(p2);
-      getint(p3);
-      CImg<unsigned char>* color = new CImg<unsigned char>(CImg<unsigned char>::vector(p1, p2, p3));
-      //cout << "COL create " << color->size() << endl;
-      return newimage(color);
+      if (parameters.size() != 1)
+        faileval;
+      string s = parameters[0]->tostring();
+      return new ValueAny<string>(s, s);
     }
-    FColor(){
-      name = "color";
+    Fstring(){
+      name = "string";
     }
-  } fcolor;
+  } fstring;
 
   class FSeq: public ExpParser::FValue {
   public:
@@ -2000,7 +1787,7 @@ public: \
       vector<Value*>* v = new vector<Value*>;
       for (int i = start; i <= stop; i += step)
         v->push_back(new ValueAny<int>(i));
-      return new ValueAny<vector<Value*>*>(v, vectorinttype);
+      return new ValueAny<vector<Value*>*>(v, "vector");
     }
     FSeq(){
       name = "seq";
@@ -2035,12 +1822,100 @@ public: \
         //      cout << files[i] << " (file)\n" ;
         v->push_back(new ValueAny<string>(files[i], files[i]));
       }
-      return new ValueAny<vector<Value*>*>(v, vectorinttype);
+      return new ValueAny<vector<Value*>*>(v, "vector");
     }
     FList_Files(){
       name = "list_files";
     }
   } flist_files;
+
+
+  class Fget: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(2);
+      getany(vector<Value*>*, v);
+      getint(p);
+      return (*v)[p];
+    }
+    Fget(){
+      name = "get";
+    }
+  } fget;
+
+  class Fset: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(2);
+      getany(vector<Value*>*, v);
+      getint(p);
+      (*v)[p] = parameters[2];
+      return unit;
+    }
+    Fset(){
+      name = "set";
+    }
+  } fset;
+
+  class Fpush: public ExpParser::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(2);
+      getany(vector<Value*>*, v);
+      v->push_back(parameters[1]);
+      return unit;
+    }
+    Fpush(){
+      name = "push";
+    }
+  } fpush;
+
+  ValueAny<vector<Value*>*>* newvector(vector<Value*>* point){
+    ValueAny<vector<Value*>*>* v = new ValueAny<vector<Value*>*>(point, "array");
+    v->members.push_back(&fget);
+    v->members.push_back(&fset);
+    v->members.push_back(&fpush);
+    return v;
+  }
+
+  class Fnewvector: public ExpParser::FValue {
+  private:
+    vector<Value*> values;
+  public:
+    Value* eval(vector<Value*>& parameters){
+      auto result = new vector<Value*>;
+      for (unsigned int i = 0; i < parameters.size(); i++)
+        result->push_back(parameters[i]);
+      return newvector(result);
+    }
+    Fnewvector(){
+      name = "newvector";
+    }
+  } fnewvector;
+}
+
+namespace Spark {
+  using namespace ExpParser;
+
+  ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point);
+  ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point);
+  ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point);
+
+  class FColor: public ExpParser::FValue {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(3);
+      getint(p1);
+      getint(p2);
+      getint(p3);
+      CImg<unsigned char>* color = new CImg<unsigned char>(CImg<unsigned char>::vector(p1, p2, p3));
+      //cout << "COL create " << color->size() << endl;
+      return newimage(color);
+    }
+    FColor(){
+      name = "color";
+    }
+  } fcolor;
 
   class FPlane: public ExpParser::member<Value> {
   public:
@@ -2054,7 +1929,7 @@ public: \
       getint(p5);
       getint(p6);
       getint(p7);
-      getptr(CImg<unsigned char>,fcolor.name,p8);
+      getptr(CImg<unsigned char>,p8);
       getdouble(p9);
       unique_ptr<Image::MyMesh> plane = Image::fmplane3d(p1, p2, p3, p4, p5, p6, p7, *p8, p9);
       Image::append(scene, plane);
@@ -2092,7 +1967,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(10);
-      getptr(Image::MyMesh,mymeshtype,scene)
+      getptr(Image::MyMesh,scene)
       getint(p1);
       getint(p2);
       getint(p3);
@@ -2100,7 +1975,7 @@ public: \
       getint(p5);
       getint(p6);
       getint(p7);
-      getptr(CImg<unsigned char>,fcolor.name,p8);
+      getptr(CImg<unsigned char>,p8);
       getdouble(p9);
       unique_ptr<Image::MyMesh> plane = Image::fmhplane3d(p1, p2, p3, p4, p5, p6, p7, *p8, p9);
       Image::append(scene, plane);
@@ -2115,8 +1990,8 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
-      getptr(Image::MyMesh,mymeshtype,scene);
-      Image::show(scene);
+      getptr(Image::MyMesh,scene);
+      scene->show();
       return unit;
     }
     FShow(){
@@ -2199,7 +2074,7 @@ public: \
         ball->add(point, radius, threshold);
       }
       balls->add(ball);
-      return unit;//new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
+      return unit;
     }
     FNewmetaball(){
       name = "add";
@@ -2227,7 +2102,7 @@ public: \
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 0)
         faileval;
-      ValueAny<Image::MetaMetaBall*>* result = new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, mymeshtype);
+      ValueAny<Image::MetaMetaBall*>* result = new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, "Meta Meta Ball");
       result->members.push_back(&fnewmetaball);
       result->members.push_back(&fmetaballsmesh);
       return result;
@@ -2259,7 +2134,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
-      getptr(CImgDisplay,"CImgDisplay",disp);
+      getptr(CImgDisplay,disp);
       getint(p1);
       disp->wait(p1);
       return unit;
@@ -2273,7 +2148,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
-      getptr(CImg<unsigned char>,cimguchar,img);
+      getptr(CImg<unsigned char>,img);
       img->fill(0);
       return unit;
     }
@@ -2286,8 +2161,8 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
-      getptr(CImg<unsigned char>,cimguchar,img);
-      getptr(CImgDisplay,"CImgDisplay",disp);
+      getptr(CImg<unsigned char>,img);
+      getptr(CImgDisplay,disp);
       disp->display(*img);
       return unit;
     }
@@ -2315,7 +2190,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
-      getptr(CImg<unsigned char>,cimguchar,img);
+      getptr(CImg<unsigned char>,img);
       CImg<unsigned char>* image = new CImg<unsigned char>(*img);
       return newimage(image);
     }
@@ -2329,7 +2204,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(3);
-      getptr(CImg<unsigned char>,cimguchar,img);
+      getptr(CImg<unsigned char>,img);
       getint(size_x);
       getint(size_y);
       CImg<unsigned char>* image;
@@ -2351,8 +2226,8 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(6);
-      getptr(CImg<unsigned char>,cimguchar,img);
-      getptr(CImg<unsigned char>,cimguchar,image);
+      getptr(CImg<unsigned char>,img);
+      getptr(CImg<unsigned char>,image);
       getint(p2);
       getint(p3);
       getdouble(p4);
@@ -2372,7 +2247,7 @@ public: \
     Value* eval(vector<Value*>& parameters){
       check_parameters(3);
       getany(string,path);
-      getptr(CImg<unsigned char>,fcolor.name,col);
+      getptr(CImg<unsigned char>,col);
       getdouble(opacity);
       cout << "READING " << path << endl;;
       Image::MyMesh* mesh = (new Image::MyMesh())->readOFF(path, *col, opacity);
@@ -2388,8 +2263,8 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(9);
-      getptr(CImg<unsigned char>,cimguchar,img);
-      getptr(Image::MyMesh,mymeshtype,mesh);
+      getptr(CImg<unsigned char>,img);
+      getptr(Image::MyMesh,mesh);
       getdouble(x);
       getdouble(y);
       getdouble(z);
@@ -2409,7 +2284,7 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(1);
-      getptr(CImg<unsigned char>,cimguchar,img);
+      getptr(CImg<unsigned char>,img);
       CImgDisplay disp(*img,"Spark");
       auto result = new ValueAny<CImgDisplay*>(new CImgDisplay(disp), "CImgDisplay");
       result->members.push_back(&fwait);
@@ -2424,12 +2299,12 @@ public: \
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(7);
-      getptr(CImg<unsigned char>,cimguchar,img);
+      getptr(CImg<unsigned char>,img);
       getint(p1);
       getint(p2);
       getint(p3);
       getint(p4);
-      getptr(CImg<unsigned char>,fcolor.name,p5);
+      getptr(CImg<unsigned char>,p5);
       getdouble(p6);
       img->draw_rectangle(p1, p2, p3, p4, p5->data(), (float)p6);;
       return unit;
@@ -2444,23 +2319,23 @@ public: \
     Value* eval(vector<Value*>& parameters){
       if(parameters.size() == 7){
         check_parameters(7);
-        getptr(CImg<unsigned char>,cimguchar,img);
+        getptr(CImg<unsigned char>,img);
         getint(x);
         getint(y);
         getany(string,s);
-        getptr(CImg<unsigned char>,fcolor.name,color);
+        getptr(CImg<unsigned char>,color);
         getdouble(opacity);
         getint(size);
         img->draw_text(x, y, s.data(), color->data(), 0,(float)opacity, size);
         return unit;
       }
         check_parameters(8);
-        getptr(CImg<unsigned char>,cimguchar,img);
+        getptr(CImg<unsigned char>,img);
         getint(x);
         getint(y);
         getany(string,s);
-        getptr(CImg<unsigned char>,fcolor.name,color);
-        getptr(CImg<unsigned char>,fcolor.name,bgcolor);
+        getptr(CImg<unsigned char>,color);
+        getptr(CImg<unsigned char>,bgcolor);
         getdouble(opacity);
         getint(size);
         img->draw_text(x, y, s.data(), color->data(), bgcolor->data(),(float)opacity, size);
@@ -2472,43 +2347,13 @@ public: \
     }
   } ftext;
 
-  class Fstring: public ExpParser::FValue {
-  public:
-    Value* eval(vector<Value*>& parameters){
-      if (parameters.size() != 1)
-        faileval;
-      string s = parameters[0]->tostring();
-      return new ValueAny<string>(s, s);
-    }
-    Fstring(){
-      name = "string";
-    }
-  } fstring;
-
-  void* item_fractal_animation() {
-    CImg<unsigned char> img(400,400,1,3,0), noise(3,2,1,3);
-    CImgDisplay disp(img,"[#4] - Fractal Animation");
-    float zoom = 0;
-
-    for (unsigned int iter = 0; !disp.is_closed() && !disp.is_keyQ() && !disp.is_keyESC(); ++iter, zoom+=0.2f) {
-      img.draw_image((img.width() - noise.width())/2,
-                     (img.height() - noise.height())/2,
-                     noise.fill(0).noise(255,1)).
-        rotate((float)(10*std::sin(iter/25.0)),0.5f*img.width(),0.5f*img.height(),(float)(1.04f + 0.02f*std::sin(zoom/10)),0,0).
-        resize(disp.resize(false)).display(disp.wait(25));
-      if (disp.is_keyCTRLLEFT() && disp.is_keyF()) disp.resize(400,400,false).toggle_fullscreen(false);
-    }
-    return 0;
-  }
-
-
   class Fsavebmp: public ExpParser::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
       check_parameters(2);
-      getptr(CImg<unsigned char>,cimguchar,img);
+      getptr(CImg<unsigned char>,img);
       getint(p1);
-      //      getptr(CImg<unsigned char>,fcolor.name,p5);
+      //      getptr(CImg<unsigned char>,p5);
       string s = boost::lexical_cast<std::string>(p1);
       string s0 = "000000";
       s0.resize(6 - s.size());
@@ -2520,81 +2365,6 @@ public: \
       name = "savebmp";
     }
   } fsavebmp;
-
-  class Fget: public ExpParser::member<Value> {
-  public:
-    Value* eval(vector<Value*>& parameters){
-      check_parameters(2);
-      getany(vector<Value*>*, v);
-      getint(p);
-      return (*v)[p];
-    }
-    Fget(){
-      name = "get";
-    }
-  } fget;
-
-  class Fset: public ExpParser::member<Value> {
-  public:
-    Value* eval(vector<Value*>& parameters){
-      check_parameters(2);
-      getany(vector<Value*>*, v);
-      getint(p);
-      (*v)[p] = parameters[2];
-      return unit;
-    }
-    Fset(){
-      name = "set";
-    }
-  } fset;
-
-  class Fpush: public ExpParser::member<Value> {
-  public:
-    Value* eval(vector<Value*>& parameters){
-      check_parameters(2);
-      getany(vector<Value*>*, v);
-      v->push_back(parameters[1]);
-      return unit;
-    }
-    Fpush(){
-      name = "push";
-    }
-  } fpush;
-
-  class Fnewvector: public ExpParser::FValue {
-  private:
-    vector<Value*> values;
-  public:
-    Value* eval(vector<Value*>& parameters){
-      auto result = new vector<Value*>;
-      for (unsigned int i = 0; i < parameters.size(); i++)
-        result->push_back(parameters[i]);
-      return newvector(result);
-    }
-    Fnewvector(){
-      name = "newvector";
-    }
-  } fnewvector;
-
-  class Fmemoize: public ExpParser::FValue {
-  public:
-    Value* eval(vector<Value*>& parameters){
-      check_parameters(2);
-      getptr(CImg<unsigned char>,cimguchar,img);
-      getint(p1);
-      //      getptr(CImg<unsigned char>,fcolor.name,p5);
-      string s = boost::lexical_cast<std::string>(p1);
-      string s0 = "000000";
-      s0.resize(6 - s.size());
-      string filename = "/home/fmaurel/prog/spark/output/image" + s0 + s + ".bmp";
-      img->save_bmp(filename.data());
-      return unit;
-    }
-    Fmemoize(){
-      name = "memoize";
-    }
-  } fmemoize;
-
 
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point){
     ValueAny<Image::supportPoint*>* v = new ValueAny<Image::supportPoint*>(point, "point");
@@ -2628,12 +2398,27 @@ public: \
     return v;
   }
 
-  ValueAny<vector<Value*>*>* newvector(vector<Value*>* point){
-    ValueAny<vector<Value*>*>* v = new ValueAny<vector<Value*>*>(point, "array");
-    v->members.push_back(&fget);
-    v->members.push_back(&fset);
-    v->members.push_back(&fpush);
-    return v;
+  Env* env(){
+    Env* env = new Env();
+    env->functions.push_back(&fseq);
+    env->functions.push_back(&fplus);
+    env->functions.push_back(&fminus);
+    env->functions.push_back(&ftimes);
+    env->functions.push_back(&fdiv);
+    env->functions.push_back(&fnot);
+    env->functions.push_back(&ExpParser::fmod);
+
+    env->functions.push_back(&fcolor);
+    env->functions.push_back(&fnewimg);
+    env->functions.push_back(&fnewvector);
+    env->functions.push_back(&floadmesh);
+    env->functions.push_back(&fnewmesh);
+    env->functions.push_back(&floadimage);
+    env->functions.push_back(&fstring);
+    env->functions.push_back(&flist_files);
+    env->functions.push_back(&fnewpoint);
+    env->functions.push_back(&fnewmetametaball);
+    return env;
   }
 }
 
@@ -2654,41 +2439,12 @@ string read(string filename){
 }
 
 int main(int argc, char **argv) {
-  //  plot2d(argc, argv, "sin(x/8) % cos(2*x)");
-  // Read command line argument.
-  cimg_usage("Simple plotter of mathematical formulas");
-
-  //string s = "var blue = color(0, 0, 255);var red = color(255, 0, 0);var x = scene; plane(scene, 50, 20, 10, 10, 0, 0, 30, red, 0.9); show(scene);";
-  //hplane(scene, 500, 200, 0, 20, 0, blue, 0.5);";
-  //string s = "var blue = color(0, 0, 255);var red = color(255, 0, 0); f(x); var x = 3.; var y = 4.; var z = x + y;";
-  //  s = "var x = 12.5;";
-
-  ExpParser::Env* env = new ExpParser::Env();
-  env->functions.push_back(&ExpParser::fseq);
-  env->functions.push_back(&ExpParser::fplus);
-  env->functions.push_back(&ExpParser::fminus);
-  env->functions.push_back(&ExpParser::ftimes);
-  env->functions.push_back(&ExpParser::fdiv);
-  env->functions.push_back(&ExpParser::fnot);
-  env->functions.push_back(&ExpParser::fmod);
-
-  env->functions.push_back(&ExpParser::fcolor);
-  env->functions.push_back(&ExpParser::fnewimg);
-  env->functions.push_back(&ExpParser::fnewvector);
-  env->functions.push_back(&ExpParser::floadmesh);
-  env->functions.push_back(&ExpParser::fnewmesh);
-  env->functions.push_back(&ExpParser::floadimage);
-  env->functions.push_back(&ExpParser::fstring);
-  env->functions.push_back(&ExpParser::flist_files);
-  env->functions.push_back(&ExpParser::fnewpoint);
-  env->functions.push_back(&ExpParser::fnewmetametaball);
-
+  auto env = Spark::env();
   unique_ptr<ExpParser::Block> scenes(new ExpParser::Block);
   string readopt = "-s";
   string evalopt = "-e";
 
   for (int i = 0; i < (argc - 1) / 2; i++){
-    //string filename = "/home/fmaurel/prog/spark/scene.sp";
     string s;
     if (argv[2 * i + 1] == readopt)
       s = read(argv[2 * i + 2]);
@@ -2705,10 +2461,6 @@ int main(int argc, char **argv) {
   }
   here;
   unique_ptr<ExpParser::Expr> e = move(scenes);
-  //  pp(e);
-  here;
   e->eval(*env);
-  here;
-
   return 0;
 }
