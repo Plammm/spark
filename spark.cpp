@@ -181,25 +181,38 @@ namespace Image
       opacities = CImg<float>(primitives.size(), opacity);
       return this;
     }
-    void colorfrom(float xc, float yc, float zc){
+    void colorfrom(float xc, float yc, float zc, float xf, float yf, float zf, float r0, float g0, float b0){
       colors.assign();
       for(unsigned int i = 0; i < primitives.size(); i++){
         CImg<float> f = primitives[i];
 	float x = vertices(f(0), 0);
 	float y = vertices(f(0), 1);
         float z = vertices(f(0), 2);
-	int r = 10 * abs(x - xc);
-	int g = 10 * abs(y - yc);
-	int b = 10 * abs(z - zc);
+	int r = r0 + xf * abs(x - xc);
+	int g = g0 + yf * abs(y - yc);
+	int b = b0 + zf * abs(z - zc);
+	if (r < 0) r = 0;
+	if (g < 0) g = 0;
+	if (b < 0) b = 0;
 	colors.insert(CImg<unsigned char>::vector(r, g, b));
       }
     }
-    // void draw(CImg<unsigned char>* img){
-    //   CImg<unsigned char> col = CImg<unsigned char>::vector(0, 255, 0);
-    //   CImgList<unsigned char> cols = CImgList<unsigned char>(primitives.size(), col);
-    //   CImg<float> opacities = CImg<float>(primitives.size(), 0.5f);
-    //   img->draw_object3d(0, 0, 0, vertices>'x', primitives, cols, opacities);
-    // }
+    void shrinkfrom(float xc, float yc, float zc, float xf, float yf, float zf, float coef){
+      //colors.assign();
+      unsigned int size = vertices.size() / 3;
+      for(unsigned int i = 0; i < size; i++){
+        float x = vertices(i, 0);
+        float y = vertices(i, 1);
+        float z = vertices(i, 2);
+	float dist = xf * (x - xc) * (x - xc) + yf * (y - yc) * (y - yc) + zf * (z - zc) * (z - zc);
+	float lambda = coef * (1 - dist);
+	if (lambda < 0)
+	  lambda = 0;
+	vertices[i] = (1 - lambda) * x + lambda * xc;
+	vertices[size + i] = (1 - lambda) * y + lambda * yc;
+	vertices[2 * size + i] = (1 - lambda) * z + lambda * zc;
+      }
+    }
     void drawrotate(CImg<unsigned char>* img, int x, int y, int z, float alpha, float beta, float gamma, float focale){
       //      cout << "draw1 " << vertices.size() << endl;
       //      const CImg<float> rpoints = CImg<>::rotation_matrix(1,1,0,(alpha))*CImg<>::rotation_matrix(1,0,1,(beta))*CImg<>::rotation_matrix(0,1,1,(gamma))*((vertices>'x').shift_object3d());
@@ -745,18 +758,44 @@ namespace Spark {
   class Fcolor_from: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(4);
+      check_parameters(10);
       getptr(Image::MyMesh,mesh);
       getdouble(x);
       getdouble(y);
       getdouble(z);
-      mesh->colorfrom(x, y, z);
+      getdouble(xf);
+      getdouble(yf);
+      getdouble(zf);
+      getdouble(r0);
+      getdouble(g0);
+      getdouble(b0);
+      mesh->colorfrom(x, y, z, xf, yf, zf, r0, g0, b0);
       return voidunit();
     }
     Fcolor_from(){
       name = "color_from";
     }
   } fcolor_from;
+
+  class Fshrink_from: public Spunk::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(8);
+      getptr(Image::MyMesh,mesh);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      getdouble(xf);
+      getdouble(yf);
+      getdouble(zf);
+      getdouble(coef);
+      mesh->shrinkfrom(x, y, z, xf, yf, zf, coef);
+      return voidunit();
+    }
+    Fshrink_from(){
+      name = "shrink_from";
+    }
+  } fshrink_from;
 
   class Fdrawmesh: public Spunk::member<Value> {
   public:
@@ -879,6 +918,7 @@ namespace Spark {
     v->members.push_back(&fhplane);
     v->members.push_back(&fshow);
     v->members.push_back(&fcolor_from);
+    v->members.push_back(&fshrink_from);
     return v;
   }
 
