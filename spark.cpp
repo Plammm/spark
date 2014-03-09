@@ -167,7 +167,6 @@ namespace Image
       for (int i = 0; i < lv; i++){
         double x, y, z;
         infile >> x >> y >> z;
-        //vertex(x + 1000, -y+1000, -z+1000);
         CImg<float>::vector(x,-y,-z).move_to(verticeslist);
       }
       for (int i = 0; i < lp; i++){
@@ -181,6 +180,19 @@ namespace Image
       colors = CImgList<unsigned char>(primitives.size(), col);
       opacities = CImg<float>(primitives.size(), opacity);
       return this;
+    }
+    void colorfrom(float xc, float yc, float zc){
+      colors.assign();
+      for(unsigned int i = 0; i < primitives.size(); i++){
+        CImg<float> f = primitives[i];
+	float x = vertices(f(0), 0);
+	float y = vertices(f(0), 1);
+        float z = vertices(f(0), 2);
+	int r = 10 * abs(x - xc);
+	int g = 10 * abs(y - yc);
+	int b = 10 * abs(z - zc);
+	colors.insert(CImg<unsigned char>::vector(r, g, b));
+      }
     }
     // void draw(CImg<unsigned char>* img){
     //   CImg<unsigned char> col = CImg<unsigned char>::vector(0, 255, 0);
@@ -730,6 +742,22 @@ namespace Spark {
     }
   } floadmesh;
 
+  class Fcolor_from: public Spunk::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(4);
+      getptr(Image::MyMesh,mesh);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      mesh->colorfrom(x, y, z);
+      return voidunit();
+    }
+    Fcolor_from(){
+      name = "color_from";
+    }
+  } fcolor_from;
+
   class Fdrawmesh: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
@@ -850,6 +878,7 @@ namespace Spark {
     v->members.push_back(&fplane);
     v->members.push_back(&fhplane);
     v->members.push_back(&fshow);
+    v->members.push_back(&fcolor_from);
     return v;
   }
 

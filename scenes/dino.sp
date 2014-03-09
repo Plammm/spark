@@ -1,7 +1,7 @@
 var play_dino() =
 {
   var dino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
-
+  dino.color_from(20, 0, 0);
   {
     var alpha = -0.5;
     var beta = 5.4;
