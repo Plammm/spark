@@ -65,7 +65,7 @@ var title(x, s) =
     var toto = 3 * ((33 * ti) / max);
     img.text(x - toto, 300 - toto, s, white, toto / max, toto);
     snapshot();
-  }  
+  }
 };
 
 var rotate(mesh, z0, beta0, beta1) =

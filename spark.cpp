@@ -213,6 +213,25 @@ namespace Image
 	vertices[2 * size + i] = (1 - lambda) * z + lambda * zc;
       }
     }
+    void select(float xc, float yc, float zc, float xf, float yf, float zf){
+      CImgList<float> newprimitives;
+      CImgList<float> newcolors;
+      CImg<float> newopacities;
+      for(unsigned int i = 0; i < primitives.size(); i++){
+        CImg<float> f = primitives[i];
+	float x = vertices(f(0), 0);
+	float y = vertices(f(0), 1);
+        float z = vertices(f(0), 2);
+	float dir = xf * (x - xc) + yf * (y - yc) + zf * (z - zc);
+	if (dir < 0) continue;
+	newcolors.insert(colors[i]);
+	primitives[i].move_to(newprimitives);
+      }
+      colors = newcolors;
+      primitives = newprimitives;
+      //      newopacities = CImg<float>(newprimitives.size(), opacities(0));
+      //opacities = newopacities;
+    }
     void drawrotate(CImg<unsigned char>* img, int x, int y, int z, float alpha, float beta, float gamma, float focale){
       //      cout << "draw1 " << vertices.size() << endl;
       //      const CImg<float> rpoints = CImg<>::rotation_matrix(1,1,0,(alpha))*CImg<>::rotation_matrix(1,0,1,(beta))*CImg<>::rotation_matrix(0,1,1,(gamma))*((vertices>'x').shift_object3d());
@@ -797,6 +816,26 @@ namespace Spark {
     }
   } fshrink_from;
 
+
+  class Fselect: public Spunk::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(7);
+      getptr(Image::MyMesh,mesh);
+      getdouble(x);
+      getdouble(y);
+      getdouble(z);
+      getdouble(xf);
+      getdouble(yf);
+      getdouble(zf);
+      mesh->select(x, y, z, xf, yf, zf);
+      return voidunit();
+    }
+    Fselect(){
+      name = "select";
+    }
+  } fselect;
+
   class Fdrawmesh: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
@@ -919,6 +958,7 @@ namespace Spark {
     v->members.push_back(&fshow);
     v->members.push_back(&fcolor_from);
     v->members.push_back(&fshrink_from);
+    v->members.push_back(&fselect);
     return v;
   }
 
