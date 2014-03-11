@@ -231,8 +231,6 @@ namespace Spunk
     return true;
   }
 
-  //  enum Kind { Int, Double, String, Function, Ptr };
-
   class Expr;
 
   template<typename T>
