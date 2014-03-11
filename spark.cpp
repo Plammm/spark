@@ -14,6 +14,7 @@
 #include <boost/filesystem.hpp>
 
 #include <spunk.hpp>
+#include <spunk.hpp>
 
 #ifndef cimg_imagepath
 #define cimg_imagepath "../CImg/CImg-1.5.7/examples/img/"
@@ -73,62 +74,6 @@ namespace Image
         }
       return vertices>'x';
     }
-
-    static void Draw(int argc, char **argv,
-                     const float size_x=1, const float size_y=1,
-                     const unsigned int subdivisions_x=10, const unsigned int subdivisions_y=10) {
-      const char* expression = "x + y * y";
-      const char *const formula = cimg_option("-f",expression,"Formula to plot");
-      CImgList<unsigned int> faces3d;
-      faces3d.assign();
-      if (!subdivisions_x || !subdivisions_y) return;
-      CImgList<unsigned char> colors;
-      CImgList<floatT> vertices;
-      CImgList<floatT> opacities;
-      const unsigned int w = subdivisions_x + 1, h = subdivisions_y + 1;
-      const float fx = (float)size_x/w, fy = (float)size_y/h;
-      // double f0 = cimg::eval("x + y * y", 0, 0, 0, 0);
-      // if (10 < f0)
-      //  throw f0;
-      for (unsigned int y = 0; y<h; ++y)
-        for (unsigned int x = 0; x<w; ++x){
-          double z = cimg::eval(formula, fx*x, fy*y, 0, 0);
-          //double z = cimg::eval(0, fx*x, fy*y, 0, 0);
-          //z = x + y * y;
-          CImg<floatT>::vector(fx*x,fy*y,z).move_to(vertices);
-        }
-      for (unsigned int y = 0; y<subdivisions_y; ++y)
-        for (unsigned int x = 0; x<subdivisions_x; ++x) {
-          const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
-          CImg<unsigned int>::vector(off1,off4,off3,off2).move_to(faces3d);
-          colors.insert(CImg<unsigned char>::vector(0,0,255));
-          opacities.insert(CImg<floatT>::vector(1.0f));
-        }
-      if (true){
-        for (unsigned int y = 0; y<h; ++y)
-          for (unsigned int x = 0; x<w; ++x){
-            double z = 0;
-            CImg<floatT>::vector(fx*x,fy*y,z).move_to(vertices);
-          }
-        for (unsigned int y = 0; y<subdivisions_y; ++y)
-          for (unsigned int x = 0; x<subdivisions_x; ++x) {
-            const int off1 = x+y*w, off2 = x+1+y*w, off3 = x+1+(y+1)*w, off4 = x+(y+1)*w;
-            int off = h * w;
-            CImg<unsigned int>::vector(off + off1,off + off4,off + off3,off + off2).move_to(faces3d);
-
-            colors.insert(CImg<unsigned char>::vector(240, 240, 240));
-            opacities.insert(CImg<floatT>::vector(0.4f));
-            //CImg<unsigned int>::vector(off + off1,off + off4,off1,off4).move_to(faces3d);
-          }
-      }
-
-      const CImg<float> points3d = vertices>'x';
-      //CImg<unsigned char> graph = CImg<unsigned char>().display_object3d("Plane3d", points3d, faces3d, colors, opacities, true);
-      const CImg<unsigned char> visu = CImg<unsigned char>(3,512,512,1).fill(230,230,255).permute_axes("yzcx");
-      visu.display_object3d("Plane3d", points3d, faces3d, colors, opacities, true);
-      visu.save_bmp("/home/fmaurel/prog/spark/test1.bmp");
-
-    }
   } plane3d;
 
   class MyMesh{
@@ -139,7 +84,6 @@ namespace Image
     CImg<float> opacities;
     MyMesh(){}
     MyMesh* vertex(float x, float y, float z){
-      //vertices.append(CImg<float>::vector(x,y,z));
       CImg<float>::vector(x,y,z).move_to(vertices);
       return this;
     }
@@ -190,7 +134,6 @@ namespace Image
       }
     }
     void shrinkfrom(float xc, float yc, float zc, float xf, float yf, float zf, float coef){
-      //colors.assign();
       unsigned int size = vertices.size() / 3;
       for(unsigned int i = 0; i < size; i++){
         float x = vertices(i, 0);
@@ -417,7 +360,6 @@ namespace Spark {
       getint(p3);
       close_parameters;
       CImg<unsigned char>* color = new CImg<unsigned char>(CImg<unsigned char>::vector(p1, p2, p3));
-      //cout << "COL create " << color->size() << endl;
       return newimage(color);
     }
     FColor(){
@@ -698,7 +640,6 @@ namespace Spark {
       close_parameters;
       cout << "READING " << p0 << endl;;
       CImg<unsigned char>* image = new CImg<unsigned char>(CImg<unsigned char>().load(p0.data()));
-      //      cout << "Done " << p0 << " " << image->spectrum() << endl;;
       return newimage(image);
     }
     Floadimage(){
@@ -755,9 +696,7 @@ namespace Spark {
       getdouble(p4);
       getint(transparent);
       close_parameters;
-      //cout << "IMG" << img->size() << " " << image->size() << endl;
       img->draw_image_fm(p2, p3, 0, 0, *image, (float)p4, transparent != 0);
-      //img->draw_image(p2, p3, 0, 0, *image, (float)p4);
       return voidunit();
     }
     Fdrawimage(){
@@ -775,7 +714,6 @@ namespace Spark {
       close_parameters;
       cout << "READING " << path << endl;;
       Image::MyMesh* mesh = (new Image::MyMesh())->readOFF(path, *col, opacity);
-      //      cout << "Done " << path << endl;;
       return newmesh(mesh);
     }
     Floadmesh(){
@@ -933,7 +871,6 @@ namespace Spark {
       getint(size);
       close_parameters;
       img->draw_text(x, y, s.data(), color->data(), bgcolor->data(),(float)opacity, size);
-      //      img->draw_text(3,3,"Mouse buttons\nto zoom in/out",color,0,0.8f,24)
       return voidunit();
     }
     Ftext(){
@@ -948,7 +885,6 @@ namespace Spark {
       getptr(CImg<unsigned char>,img);
       getint(p1);
       close_parameters;
-      //      getptr(CImg<unsigned char>,p5);
       string s = boost::lexical_cast<std::string>(p1);
       string s0 = "000000";
       s0.resize(6 - s.size());

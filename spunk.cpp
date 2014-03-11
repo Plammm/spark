@@ -271,6 +271,9 @@ namespace Spunk
     }
   };
 
+  ValueAny<string>* newstring(string s);
+  ValueAny<vector<Value*>*>* newvector(vector<Value*>* point);
+
   template<>
   class ValueAny<int>: public Value {
   public:
@@ -392,7 +395,7 @@ namespace Spunk
       return result;
     }
     virtual Value* eval(Env&){
-      return new ValueAny<string>(v, v);
+      return newstring(v);
     }
     virtual string tostring(){
       return v;
@@ -1296,7 +1299,7 @@ namespace Spunk
       ValueAny<int>* p2i = dynamic_cast<ValueAny<int>*>(p2);
       ValueAny<string>* p2s = dynamic_cast<ValueAny<string>*>(p2);
       if (p1s != 0 && p2s != 0)
-        return new ValueAny<string>(p1s->value + p2s->value, p1s->value + p2s->value);
+        return newstring(p1s->value + p2s->value);
       else if (p1i != 0 && p2i != 0)
         return new ValueAny<int>(p1i->value + p2i->value, p1i->s + p2i->s);
       ValueAny<double>* p1d = doubleValue(p1);
@@ -1414,15 +1417,13 @@ public: \
   binop(FTimes,ftimes,"*",*);
   binop(FDiv,fdiv,"/",/);
 
-  ValueAny<vector<Value*>*>* newvector(vector<Value*>* point);
-
   class Fstring: public FValue {
   public:
     Value* eval(vector<Value*>& parameters){
       if (parameters.size() != 1)
         faileval;
       string s = parameters[0]->tostring();
-      return new ValueAny<string>(s, s);
+      return newstring(s);
     }
     Fstring(){
       name = "string";
@@ -1485,7 +1486,7 @@ public: \
       vector<Value*>* v = new vector<Value*>;
       for(unsigned int i = 0; i < files.size(); i++){
         //      cout << files[i] << " (file)\n" ;
-        v->push_back(new ValueAny<string>(files[i], files[i]));
+        v->push_back(newstring(files[i]));
       }
       return new ValueAny<vector<Value*>*>(v, "vector");
     }
@@ -1535,11 +1536,61 @@ public: \
     }
   } fpush;
 
+
+  class Fstringlength: public member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(1);
+      getany(string, v);
+      return new ValueAny<int>(v.size());
+    }
+    Fstringlength(){
+      name = "length";
+    }
+  } fstringlength;
+
+
+  class Fvectorlength: public member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(1);
+      getany(vector<Value*>*, v);
+      return new ValueAny<int>(v->size());
+    }
+    Fvectorlength(){
+      name = "length";
+    }
+  } fvectorlength;
+
+
+  class Fstringsub: public member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      check_parameters(3);
+      getany(string, v);
+      getint(p);
+      getint(l);
+      return newstring(v.substr(p, l));
+    }
+    Fstringsub(){
+      name = "sub";
+    }
+  } fstringsub;
+
+
+  ValueAny<string>* newstring(string s){
+    ValueAny<string>* v = new ValueAny<string>(s, s);
+    v->add(&fstringlength)
+      ->add(&fstringsub);
+    return v;
+  }
+
   ValueAny<vector<Value*>*>* newvector(vector<Value*>* point){
     ValueAny<vector<Value*>*>* v = new ValueAny<vector<Value*>*>(point, "array");
-    v->members.push_back(&fget);
-    v->members.push_back(&fset);
-    v->members.push_back(&fpush);
+    v->add(&fget)
+      ->add(&fset)
+      ->add(&fpush)
+      ->add(&fvectorlength);
     return v;
   }
 

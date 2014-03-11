@@ -1,5 +1,33 @@
 var play_dino() =
 {
+
+  var longshow(x, y, s, col, opacity, size) =
+  {
+    for(i in seq(1, s.length())){
+      img.text(x, y, s.sub(0, i), col, opacity, size);
+      stay(0.1);
+    }
+  }
+
+  {
+    var intro = newvector();
+    intro.push("A l'aube de l'an 2000...");
+    intro.push("Et au lieu de faire des trucs super balezes et mega importants");
+    intro.push("(comme il fera ensuite)");
+    intro.push("Matthieu travaille sur des objets en 3D.");
+    intro.push("Ce travail s'est perdu...");
+    intro.push("");
+    intro.push("Il a donc fallu le refaire.");
+    intro.push("");
+    intro.push("(c'est Matthieu qui va etre content)");
+
+    var size = 30;
+    for(j in seq(0, intro.length() - 1)){
+      longshow(100, 100 + size * j, intro.get(j), white, 1, size);
+      stay(0.5);
+    }
+  }
+
   var dino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
   var queuedino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
 
@@ -15,8 +43,6 @@ var play_dino() =
       img.drawmesh(dino, 640, 400, - 4 * toto, alpha, beta, gamma, 700);
       snapshot();
     }
-
-
 
     for(tt in seq(0, speed, 30)){
       dino.shrink_from(0, -35, 25, 0, 0.0, 0.01, tt / 100.);
