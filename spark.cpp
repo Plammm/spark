@@ -24,11 +24,12 @@
 #define ccout(s) {cout << "Line: " << __LINE__ << " NextPos: " << nextPos << " " << s << endl; }
 #define here //{cout << "Here: " << __LINE__ << endl;}
 
-#define check_parameters(siz) if (parameters.size() != siz) faileval;int n = 0;
-#define getany(any,v) ValueAny<any>* v ## ptr = dynamic_cast<ValueAny<any>*>(parameters[n]); if (v ## ptr == 0) faileval; any v = v ## ptr->value; n++;
+#define open_parameters unsigned int n = 0; unsigned int opened_parameters = 0;
+#define close_parameters if (parameters.size() != opened_parameters + n) faileval;
+#define getany(any,v) if (parameters.size() < n) faileval; ValueAny<any>* v ## ptr = dynamic_cast<ValueAny<any>*>(parameters[n]); if (v ## ptr == 0) faileval; any v = v ## ptr->value; n++;
 #define getptr(any,v) getany(any*,v)
-#define getdouble(v) ValueAny<double>* v ## ddd = doubleValue(parameters[n]); if (v ## ddd == 0) faileval; double v = v ## ddd->value; n++;
-#define getint(v) ValueAny<int>* v ## ddd = intValue(parameters[n]); if (v ## ddd == 0) faileval; int v = v ## ddd->value; n++;
+#define getdouble(v) if (parameters.size() < n) faileval; ValueAny<double>* v ## ddd = doubleValue(parameters[n]); if (v ## ddd == 0) faileval; double v = v ## ddd->value; n++;
+#define getint(v) if (parameters.size() < n) faileval; ValueAny<int>* v ## ddd = intValue(parameters[n]); if (v ## ddd == 0) faileval; int v = v ## ddd->value; n++;
 
 //#define getint(v) ValueAny<int>* v ## ptr = dynamic_cast<ValueAny<int>*>(parameters[n]); if (v ## ptr == 0) faileval; int v = v ## ptr->value; n++;
 
@@ -419,10 +420,11 @@ namespace Spark {
   class FColor: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(3);
+      open_parameters;
       getint(p1);
       getint(p2);
       getint(p3);
+      close_parameters;
       CImg<unsigned char>* color = new CImg<unsigned char>(CImg<unsigned char>::vector(p1, p2, p3));
       //cout << "COL create " << color->size() << endl;
       return newimage(color);
@@ -435,7 +437,7 @@ namespace Spark {
   class FPlane: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(10);
+      open_parameters;
       getany(Image::MyMesh*,scene);
       getint(p1);
       getint(p2);
@@ -446,6 +448,7 @@ namespace Spark {
       getint(p7);
       getptr(CImg<unsigned char>,p8);
       getdouble(p9);
+      close_parameters;
       unique_ptr<Image::MyMesh> plane = Image::fmplane3d(p1, p2, p3, p4, p5, p6, p7, *p8, p9);
       Image::append(scene, plane);
       return voidunit();
@@ -459,7 +462,7 @@ namespace Spark {
   class FImageplane: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(8);
+      open_parameters;
       getany(Image::MyMesh*,scene);
       getany(CImg<unsigned char>*,texture);
       getint(sizex);
@@ -468,6 +471,7 @@ namespace Spark {
       getint(y);
       getint(z);
       getdouble(opacity);
+      close_parameters;
       unique_ptr<Image::MyMesh> imageplane = Image::fmimageplane(sizex, sizey, x, y, z, *texture, opacity);
       cout << "MESH" << imageplane->primitives.size() << endl;
       Image::append(scene, imageplane);
@@ -481,7 +485,7 @@ namespace Spark {
   class FHPlane: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(10);
+      open_parameters;
       getptr(Image::MyMesh,scene)
       getint(p1);
       getint(p2);
@@ -492,6 +496,7 @@ namespace Spark {
       getint(p7);
       getptr(CImg<unsigned char>,p8);
       getdouble(p9);
+      close_parameters;
       unique_ptr<Image::MyMesh> plane = Image::fmhplane3d(p1, p2, p3, p4, p5, p6, p7, *p8, p9);
       Image::append(scene, plane);
       return voidunit();
@@ -504,8 +509,9 @@ namespace Spark {
   class FShow: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(1);
+      open_parameters;
       getptr(Image::MyMesh,scene);
+      close_parameters;
       scene->show();
       return voidunit();
     }
@@ -517,8 +523,8 @@ namespace Spark {
   class FNewmesh: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      if (parameters.size() != 0)
-        faileval;
+      open_parameters;
+      close_parameters;
       return newmesh(new Image::MyMesh);
     }
     FNewmesh(){
@@ -529,11 +535,12 @@ namespace Spark {
   class FLinkpoint: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(4);
+      open_parameters;
       getany(Image::supportPoint*,point);
       getdouble(x);
       getdouble(y);
       getdouble(z);
+      close_parameters;
       return newpoint(point->link(x, y, z));
     }
     FLinkpoint(){
@@ -544,11 +551,12 @@ namespace Spark {
   class FTranslatepoint: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(4);
+      open_parameters;
       getany(Image::supportPoint*,point);
       getdouble(x);
       getdouble(y);
       getdouble(z);
+      close_parameters;
       point->translate(x, y, z);
       return voidunit();
     }
@@ -560,10 +568,11 @@ namespace Spark {
   class FNewpoint: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(3);
+      open_parameters;
       getdouble(x);
       getdouble(y);
       getdouble(z);
+      close_parameters;
       return newpoint(new Image::supportPoint(x, y, z));
     }
     FNewpoint(){
@@ -575,9 +584,7 @@ namespace Spark {
   class FNewmetaball: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      if (parameters.size() <= 1)
-        faileval;
-      unsigned int n = 0;
+      open_parameters;
       getany(Image::MetaMetaBall*,balls);
       getdouble(radius);
       getdouble(threshold);
@@ -588,6 +595,7 @@ namespace Spark {
         getany(Image::supportPoint*, point);
         ball->add(point, radius, threshold);
       }
+      close_parameters;
       balls->add(ball);
       return voidunit();
     }
@@ -599,11 +607,12 @@ namespace Spark {
   class Fmetaballsmesh: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(4);
+      open_parameters;
       getany(Image::MetaMetaBall*,balls);
       getdouble(target);
       getdouble(r);
       getint(sub);
+      close_parameters;
       Image::MyMesh* mesh = balls->mesh(target, r, sub);
       return newmesh(mesh);
     }
@@ -615,8 +624,8 @@ namespace Spark {
   class FNewmetametaball: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      if (parameters.size() != 0)
-        faileval;
+      open_parameters;
+      close_parameters;
       ValueAny<Image::MetaMetaBall*>* result = new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, "Meta Meta Ball");
       result->members.push_back(&fnewmetaball);
       result->members.push_back(&fmetaballsmesh);
@@ -631,12 +640,13 @@ namespace Spark {
   class FNewimg: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(5);
+      open_parameters;
       getint(p0);
       getint(p1);
       getint(p2);
       getint(p3);
       getint(p4);
+      close_parameters;
       CImg<unsigned char>* img = new CImg<unsigned char>(p0,p1,p2,p3,p4);
       return newimage(img);
     }
@@ -648,9 +658,10 @@ namespace Spark {
   class Fwait: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(2);
+      open_parameters;
       getptr(CImgDisplay,disp);
       getint(p1);
+      close_parameters;
       disp->wait(p1);
       return voidunit();
     }
@@ -662,8 +673,9 @@ namespace Spark {
   class Fclear: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(1);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
+      close_parameters;
       img->fill(0);
       return voidunit();
     }
@@ -675,9 +687,10 @@ namespace Spark {
   class Fdisplay: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(2);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
       getptr(CImgDisplay,disp);
+      close_parameters;
       disp->display(*img);
       return voidunit();
     }
@@ -689,8 +702,9 @@ namespace Spark {
   class Floadimage: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(1);
+      open_parameters;
       getany(string,p0);
+      close_parameters;
       cout << "READING " << p0 << endl;;
       CImg<unsigned char>* image = new CImg<unsigned char>(CImg<unsigned char>().load(p0.data()));
       //      cout << "Done " << p0 << " " << image->spectrum() << endl;;
@@ -704,8 +718,9 @@ namespace Spark {
   class Fcopyimage: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(1);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
+      close_parameters;
       CImg<unsigned char>* image = new CImg<unsigned char>(*img);
       return newimage(image);
     }
@@ -718,10 +733,11 @@ namespace Spark {
   class Fresize: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(3);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
       getint(size_x);
       getint(size_y);
+      close_parameters;
       CImg<unsigned char>* image;
       if (size_x == -50 && size_y == -50)
         image = new CImg<unsigned char>(img->get_resize_halfXY());
@@ -740,13 +756,14 @@ namespace Spark {
   class Fdrawimage: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(6);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
       getptr(CImg<unsigned char>,image);
       getint(p2);
       getint(p3);
       getdouble(p4);
       getint(transparent);
+      close_parameters;
       //cout << "IMG" << img->size() << " " << image->size() << endl;
       img->draw_image_fm(p2, p3, 0, 0, *image, (float)p4, transparent != 0);
       //img->draw_image(p2, p3, 0, 0, *image, (float)p4);
@@ -760,10 +777,11 @@ namespace Spark {
   class Floadmesh: public Spunk::FValue {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(3);
+      open_parameters;
       getany(string,path);
       getptr(CImg<unsigned char>,col);
       getdouble(opacity);
+      close_parameters;
       cout << "READING " << path << endl;;
       Image::MyMesh* mesh = (new Image::MyMesh())->readOFF(path, *col, opacity);
       //      cout << "Done " << path << endl;;
@@ -777,7 +795,7 @@ namespace Spark {
   class Fcolor_from: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(10);
+      open_parameters;
       getptr(Image::MyMesh,mesh);
       getdouble(x);
       getdouble(y);
@@ -788,6 +806,7 @@ namespace Spark {
       getdouble(r0);
       getdouble(g0);
       getdouble(b0);
+      close_parameters;
       mesh->colorfrom(x, y, z, xf, yf, zf, r0, g0, b0);
       return voidunit();
     }
@@ -799,7 +818,7 @@ namespace Spark {
   class Fshrink_from: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(8);
+      open_parameters;
       getptr(Image::MyMesh,mesh);
       getdouble(x);
       getdouble(y);
@@ -808,6 +827,7 @@ namespace Spark {
       getdouble(yf);
       getdouble(zf);
       getdouble(coef);
+      close_parameters;
       mesh->shrinkfrom(x, y, z, xf, yf, zf, coef);
       return voidunit();
     }
@@ -820,7 +840,7 @@ namespace Spark {
   class Fselect: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(7);
+      open_parameters;
       getptr(Image::MyMesh,mesh);
       getdouble(x);
       getdouble(y);
@@ -828,6 +848,7 @@ namespace Spark {
       getdouble(xf);
       getdouble(yf);
       getdouble(zf);
+      close_parameters;
       mesh->select(x, y, z, xf, yf, zf);
       return voidunit();
     }
@@ -839,7 +860,7 @@ namespace Spark {
   class Fdrawmesh: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(9);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
       getptr(Image::MyMesh,mesh);
       getdouble(x);
@@ -849,6 +870,7 @@ namespace Spark {
       getdouble(p3);
       getdouble(p4);
       getdouble(focale)
+      close_parameters;
       mesh->drawrotate(img, x, y, z, p2, p3, p4, focale);
       return voidunit();
     }
@@ -860,8 +882,9 @@ namespace Spark {
   class Fnewdisplay: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(1);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
+      close_parameters;
       CImgDisplay disp(*img,"Spark");
       auto result = new ValueAny<CImgDisplay*>(new CImgDisplay(disp), "CImgDisplay");
       result->members.push_back(&fwait);
@@ -875,7 +898,7 @@ namespace Spark {
   class Frectangle: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(7);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
       getint(p1);
       getint(p2);
@@ -883,6 +906,7 @@ namespace Spark {
       getint(p4);
       getptr(CImg<unsigned char>,p5);
       getdouble(p6);
+      close_parameters;
       img->draw_rectangle(p1, p2, p3, p4, p5->data(), (float)p6);;
       return voidunit();
     }
@@ -895,7 +919,7 @@ namespace Spark {
   public:
     Value* eval(vector<Value*>& parameters){
       if(parameters.size() == 7){
-        check_parameters(7);
+	open_parameters;
         getptr(CImg<unsigned char>,img);
         getint(x);
         getint(y);
@@ -903,20 +927,22 @@ namespace Spark {
         getptr(CImg<unsigned char>,color);
         getdouble(opacity);
         getint(size);
+	close_parameters;
         img->draw_text(x, y, s.data(), color->data(), 0,(float)opacity, size);
         return voidunit();
       }
-        check_parameters(8);
-        getptr(CImg<unsigned char>,img);
-        getint(x);
-        getint(y);
-        getany(string,s);
-        getptr(CImg<unsigned char>,color);
-        getptr(CImg<unsigned char>,bgcolor);
-        getdouble(opacity);
-        getint(size);
-        img->draw_text(x, y, s.data(), color->data(), bgcolor->data(),(float)opacity, size);
-        //      img->draw_text(3,3,"Mouse buttons\nto zoom in/out",color,0,0.8f,24)
+      open_parameters;
+      getptr(CImg<unsigned char>,img);
+      getint(x);
+      getint(y);
+      getany(string,s);
+      getptr(CImg<unsigned char>,color);
+      getptr(CImg<unsigned char>,bgcolor);
+      getdouble(opacity);
+      getint(size);
+      close_parameters;
+      img->draw_text(x, y, s.data(), color->data(), bgcolor->data(),(float)opacity, size);
+      //      img->draw_text(3,3,"Mouse buttons\nto zoom in/out",color,0,0.8f,24)
       return voidunit();
     }
     Ftext(){
@@ -927,9 +953,10 @@ namespace Spark {
   class Fsavebmp: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
-      check_parameters(2);
+      open_parameters;
       getptr(CImg<unsigned char>,img);
       getint(p1);
+      close_parameters;
       //      getptr(CImg<unsigned char>,p5);
       string s = boost::lexical_cast<std::string>(p1);
       string s0 = "000000";
