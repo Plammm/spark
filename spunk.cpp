@@ -247,6 +247,10 @@ namespace Spunk
     virtual string tostring() = 0;
     virtual int get_int() = 0;
     vector<member<Value>*> members;
+    Value* add(member<Value>* m){
+      members.push_back(m);
+      return this;
+    }
   };
 
   template<typename T>
@@ -255,7 +259,6 @@ namespace Spunk
     T value;
     string s;
   public:
-    //    Kind kind;
     ValueAny(T v, string pp){
       value = v;
       s = pp;
@@ -274,7 +277,6 @@ namespace Spunk
     int value;
     string s;
   public:
-    //    Kind kind;
     ValueAny(int v, string pp){
       value = v;
       s = pp;

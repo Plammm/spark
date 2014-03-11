@@ -15,14 +15,11 @@
 
 #include <spunk.hpp>
 
-
 #ifndef cimg_imagepath
 #define cimg_imagepath "../CImg/CImg-1.5.7/examples/img/"
 #endif
 #define faileval {cout << "Line: " << __LINE__ << endl; throw new EvalException;}
-#define failparse {cout << "Line: " << __LINE__ << " " << nextPos << endl; throw new ParseException;}
 #define ccout(s) {cout << "Line: " << __LINE__ << " NextPos: " << nextPos << " " << s << endl; }
-#define here //{cout << "Here: " << __LINE__ << endl;}
 
 #define open_parameters unsigned int n = 0; unsigned int opened_parameters = 0;
 #define close_parameters if (parameters.size() != opened_parameters + n) faileval;
@@ -30,12 +27,6 @@
 #define getptr(any,v) getany(any*,v)
 #define getdouble(v) if (parameters.size() < n) faileval; ValueAny<double>* v ## ddd = doubleValue(parameters[n]); if (v ## ddd == 0) faileval; double v = v ## ddd->value; n++;
 #define getint(v) if (parameters.size() < n) faileval; ValueAny<int>* v ## ddd = intValue(parameters[n]); if (v ## ddd == 0) faileval; int v = v ## ddd->value; n++;
-
-//#define getint(v) ValueAny<int>* v ## ptr = dynamic_cast<ValueAny<int>*>(parameters[n]); if (v ## ptr == 0) faileval; int v = v ## ptr->value; n++;
-
-//if(!parameters[n]->isNum) faileval; int v = parameters[n]->intValue;n++;
-//#define getdouble(v) if(!parameters[n]->isNum) faileval; double v = parameters[n]->doubleValue;n++;
-//#define get(string,v) if(parameters[n]->kind != String) faileval; string v = parameters[n]->stringValue;n++;
 
 using namespace std;
 using namespace cimg_library;
@@ -626,9 +617,9 @@ namespace Spark {
     Value* eval(vector<Value*>& parameters){
       open_parameters;
       close_parameters;
-      ValueAny<Image::MetaMetaBall*>* result = new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, "Meta Meta Ball");
-      result->members.push_back(&fnewmetaball);
-      result->members.push_back(&fmetaballsmesh);
+      auto result = new ValueAny<Image::MetaMetaBall*>(new Image::MetaMetaBall, "Meta Meta Ball");
+      result->add(&fnewmetaball)
+	->add(&fmetaballsmesh);
       return result;
     }
     FNewmetametaball(){
@@ -887,7 +878,7 @@ namespace Spark {
       close_parameters;
       CImgDisplay disp(*img,"Spark");
       auto result = new ValueAny<CImgDisplay*>(new CImgDisplay(disp), "CImgDisplay");
-      result->members.push_back(&fwait);
+      result->add(&fwait);
       return result;
     }
     Fnewdisplay(){
@@ -972,36 +963,36 @@ namespace Spark {
 
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point){
     Spunk::ValueAny<Image::supportPoint*>* v = new Spunk::ValueAny<Image::supportPoint*>(point, "point");
-    v->members.push_back(&flinkpoint);
-    v->members.push_back(&ftranslatepoint);
+    v->add(&flinkpoint)
+      ->add(&ftranslatepoint);
     return v;
   }
 
   ValueAny<Image::MyMesh*>* newmesh(Image::MyMesh* point){
     ValueAny<Image::MyMesh*>* v = new ValueAny<Image::MyMesh*>(point, "point");
-    v->members.push_back(&fimageplane);
-    v->members.push_back(&fplane);
-    v->members.push_back(&fhplane);
-    v->members.push_back(&fshow);
-    v->members.push_back(&fcolor_from);
-    v->members.push_back(&fshrink_from);
-    v->members.push_back(&fselect);
+    v->add(&fimageplane)
+      ->add(&fplane)
+      ->add(&fhplane)
+      ->add(&fshow)
+      ->add(&fcolor_from)
+      ->add(&fshrink_from)
+      ->add(&fselect);
     return v;
   }
 
   ValueAny<CImg<unsigned char>*>* newimage(CImg<unsigned char>* point){
     ValueAny<CImg<unsigned char>*>* v = new ValueAny<CImg<unsigned char>*>(point, "image");
-    v->members.push_back(&fdrawmesh);
-    v->members.push_back(&fsavebmp);
-    v->members.push_back(&fdisplay);
-    v->members.push_back(&fnewdisplay);
-    v->members.push_back(&frectangle);
-    v->members.push_back(&ftext);
-    v->members.push_back(&fsavebmp);
-    v->members.push_back(&fcopyimage);
-    v->members.push_back(&fdrawimage);
-    v->members.push_back(&fresize);
-    v->members.push_back(&fclear);
+    v->add(&fdrawmesh)
+      ->add(&fsavebmp)
+      ->add(&fdisplay)
+      ->add(&fnewdisplay)
+      ->add(&frectangle)
+      ->add(&ftext)
+      ->add(&fsavebmp)
+      ->add(&fcopyimage)
+      ->add(&fdrawimage)
+      ->add(&fresize)
+      ->add(&fclear);
     return v;
   }
 
@@ -1020,8 +1011,6 @@ namespace Spark {
 
 int main(int argc, char **argv) {
   auto env = Spark::env();
-
-  here;
   unique_ptr<Spunk::Expr> e = Spunk::load(argc, argv);
   e->eval(*env);
   return 0;

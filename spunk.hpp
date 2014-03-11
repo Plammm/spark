@@ -1,3 +1,6 @@
+#ifndef Spunk_version
+#define Spunk_version 1
+
 namespace Spunk {
 
   using namespace std;
@@ -22,6 +25,7 @@ namespace Spunk {
     virtual string tostring() = 0;
     virtual int get_int() = 0;
     vector<member<Value>*> members;
+    virtual Value* add(member<Value>* m) = 0;
   };
 
   Value* voidunit();
@@ -41,6 +45,10 @@ namespace Spunk {
     }
     virtual int get_int(){
       return 0;
+    }
+    Value* add(member<Value>* m){
+      members.push_back(m);
+      return this;
     }
   };
 
@@ -80,3 +88,5 @@ namespace Spunk {
 
   unique_ptr<Expr> load(int argc, char **argv);
 }
+
+#endif
