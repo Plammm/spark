@@ -22,8 +22,8 @@ var play_dino() =
     intro.push("(c'est Matthieu qui va etre content)");
 
     var size = 30;
-    for(j in seq(0, intro.length() - 1)){
-      longshow(100, 100 + size * j, intro.get(j), white, 1, size);
+    for(i in seq(0, intro.length() - 1)){
+      longshow(100, 100 + size * i, intro.get(i), white, 1, size);
       stay(0.5);
     }
   }

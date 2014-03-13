@@ -233,6 +233,8 @@ namespace Spunk
 
   class Expr;
 
+  string ppexpr(unique_ptr<Expr>& e);
+
   template<typename T>
   class member {
   public:
@@ -302,7 +304,6 @@ namespace Spunk
     double value;
     string s;
   public:
-    //    Kind kind;
     ValueAny(double v, string pp){
       value = v;
       s = pp;
@@ -330,7 +331,11 @@ namespace Spunk
       parameters = params;
     }
     string tostring(){
-      return "<fun>";
+      string params = "";
+      for(unsigned int i = 0; i < parameters.size(); i++){
+	params += " " + parameters[i];
+      }
+      return "fun" + params + " -> " + ppexpr(funcValue);
     }
     virtual int get_int(){
       faileval;
@@ -376,8 +381,37 @@ namespace Spunk
     virtual unique_ptr<Expr> copy()=0;
     virtual unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values)=0;
     virtual unique_ptr<Func> FuncMe()=0;
+    //    virtual unique_ptr<Expr> simplify()=0;
     virtual Value* eval(Env& env)=0;
     virtual string tostring()=0;
+  };
+
+  string ppexpr(unique_ptr<Expr>& e){
+    return e->tostring();
+  }
+
+  class ValueExpr: public Expr {
+  public:
+    Value* v;
+    ValueExpr(Value* value){
+      v = value;
+    }
+    unique_ptr<Expr> copy(){return unique_ptr<Expr>(new ValueExpr(v));}
+    virtual unique_ptr<Func> FuncMe(){
+      //      ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
+
+      cout << v->tostring() << endl;
+      faileval;
+    }
+    virtual unique_ptr<Expr> substitute(vector<string>&, vector<unique_ptr<Expr>>&){
+      return copy();
+    }
+    virtual Value* eval(Env&){
+      return v;
+    }
+    virtual string tostring(){
+      return v->tostring();
+    }
   };
 
   class StringExpr: public Expr {
@@ -385,6 +419,9 @@ namespace Spunk
     string v;
     StringExpr(string s){
       v = s;
+    }
+    virtual unique_ptr<Expr> simplify(){
+      return copy();
     }
     unique_ptr<Expr> copy(){return unique_ptr<Expr>(new StringExpr(v));}
     virtual unique_ptr<Func> FuncMe(){ faileval; }
@@ -407,7 +444,6 @@ namespace Spunk
     bool isInfix;
     vector<unique_ptr<Expr>> parameters;
     bool isValue;
-    //Value* v;
     unique_ptr<Func> innerCopy(){
       here;
       unique_ptr<Func> result (new Func);
@@ -501,17 +537,20 @@ namespace Spunk
             ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
             if (f == 0)
               faileval;
-            //if (f->funcValue
-            //vector<Value*> params;
-            //      for(unsigned int j = 0; j < parameters.size(); j++)
-            // params.push_back(parameters[j]);
             if (f->parameters.size() != parameters.size()){
               cout << "Bad nb parameters for application. " << tostring() << endl;
               faileval;
             }
             here;
-            //cout << f->funcValue->tostring() << endl;
-            unique_ptr<Expr> e = f->funcValue->substitute(f->parameters, parameters);
+	    // **********************
+
+            vector<unique_ptr<Expr>> params;
+            for(unsigned int j = 0; j < parameters.size(); j++){
+	      Value* v = parameters[j]->eval(env);
+	      unique_ptr<ValueExpr> param(new ValueExpr(v));
+              params.push_back(move(param));
+	    }
+            unique_ptr<Expr> e = f->funcValue->substitute(f->parameters, params);
             here;
             return e->eval(env);
             //int length =
@@ -626,12 +665,6 @@ namespace Spunk
       return result;
     }
   };
-
-  // class Command {
-  // public:
-  //   virtual void eval(Env& env)=0;
-  //   virtual string tostring()=0;
-  // };
 
 #define new_result(t) unique_ptr<t> result(new t);
 
@@ -1233,9 +1266,9 @@ namespace Spunk
     return parseCommands(s, pos);
   }
 
-  void pp(unique_ptr<Expr>& command){
-    cout << command->tostring() << endl;
-  }
+  // // void pp(unique_ptr<Expr>& command){
+  // //   cout << command->tostring() << endl;
+  // // }
 
   // void pp(unique_ptr<Expr> expr){
   //   switch(expr->kind){
