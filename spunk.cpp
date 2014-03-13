@@ -18,7 +18,7 @@ using namespace std;
 #define faileval {cout << "Line: " << __LINE__ << endl; throw new EvalException;}
 #define failparse {cout << "Line: " << __LINE__ << " " << context.nextPos << endl; throw new ParseException;}
 #define ccout(s) {cout << "Line: " << __LINE__ << " NextPos: " << nextPos << " " << s << endl; }
-#define here //{cout << "Here: " << __LINE__ << endl;}
+#define here // {cout << "Here: " << __LINE__ << endl;}
 #define check_parameters(siz) if (parameters.size() != siz) faileval;int n = 0;
 #define getany(any,v) ValueAny<any>* v ## ptr = dynamic_cast<ValueAny<any>*>(parameters[n]); if (v ## ptr == 0) faileval; any v = v ## ptr->value; n++;
 #define getptr(any,v) getany(any*,v)
@@ -64,10 +64,29 @@ namespace Spunk
   };
 
 
+  template<typename T>
+  struct namedValue {
+    string name;
+    T value;
+    namedValue(string name, T value){
+      this->name = name;
+      this->value = value;
+    }
+  };
+
+  template<typename T>
+  int assoc(vector<namedValue<T>*>& values, string& name){
+    for(int i = values.size() - 1; 0 <= i; i--)
+      if (values[i]->name == name)
+        return i;
+    return -1;
+  }
+
   class parsingContext {
   public:
     string s;
     unsigned int nextPos = 0;
+    vector<namedValue<int>*> variables;
     parsingContext(string s){
       this->s = s;
       this->nextPos = 0;
@@ -75,6 +94,7 @@ namespace Spunk
     parsingContext(parsingContext& context){
       this->s = context.s;
       this->nextPos = context.nextPos;
+      this->variables = context.variables;
     }
     bool hasChar(){
       return nextPos < s.length();
@@ -87,6 +107,36 @@ namespace Spunk
     }
     char get(unsigned int len){
       return s[nextPos + len];
+    }
+    int intid(string s){
+      int pos = assoc<int>(variables, s);
+      if (pos == -1)
+	return 0;
+      return variables[pos]->value;
+    }
+    string* id(string s){
+      int pos = assoc<int>(variables, s);
+      if (pos == -1){
+	parsingContext context = *this;
+	failparse;
+      }
+      return string_of_int(variables[pos]->value);
+    }
+    string* idornot(string& s){
+      int pos = assoc<int>(variables, s);
+      if (pos == -1){
+	return &s;
+      }
+      return string_of_int(variables[pos]->value);
+    }
+    string* nextid(string s){
+      variables.push_back(new namedValue<int>(s, intid(s) + 1));
+      return id(s);
+    }
+    string* string_of_int(int i){
+      char output[1024];
+      sprintf(output, "%i", i);
+      return new string(output);
     }
   };
 
@@ -112,8 +162,14 @@ namespace Spunk
 
   bool isint(string& s){
     for(unsigned int i = 0; i < s.length(); i++)
-      //      if(!isalnum(s[i]))
       if (!stringContains(intchars, s[i]))
+        return false;
+    return true;
+  }
+
+  bool isdouble(string& s){
+    for(unsigned int i = 0; i < s.length(); i++)
+      if (!stringContains(doublechars, s[i]))
         return false;
     return true;
   }
@@ -387,31 +443,14 @@ namespace Spunk
     virtual Value* eval(vector<Value*>& parameters)=0;
   };
 
-  struct envValue {
-    string name;
-    Value* value;
-    envValue(string name, Value* value){
-      this->name = name;
-      this->value = value;
-    }
-  };
-
   class Env {
   public:
-    vector<envValue*> values;
+    vector<namedValue<Value*>*> values;
     vector<FValue*> functions;
     void add(string name, Value* value){
-      values.push_back(new envValue(name, value));
+      values.push_back(new namedValue<Value*>(name, value));
     }
   };
-
-  template<typename T1, typename T2>
-  unique_ptr<T2>* assoc(vector<T1>names, vector<unique_ptr<T2>> values, T1 name){
-    for(int i = 0; i < names.size(); i++)
-      if (names[i] == name)
-        return &values[i];
-    return 0;
-  }
 
   enum ExprKind { ExFunc, ExComp };
 
@@ -441,8 +480,7 @@ namespace Spunk
     unique_ptr<Expr> copy(){return unique_ptr<Expr>(new ValueExpr(v));}
     virtual unique_ptr<Func> FuncMe(){
       //      ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
-
-      cout << v->tostring() << endl;
+      cout << "FUNCME: " << v->tostring() << endl;
       faileval;
     }
     virtual unique_ptr<Expr> substitute(vector<string>&, vector<unique_ptr<Expr>>&){
@@ -528,6 +566,9 @@ namespace Spunk
         return applySubstitute(names, values);
       }
       here;
+      //      cout << "++ " << id << " " << values.size() << endl;
+      //cout << tostring() << " " << name << endl;
+      //cout << "values[id] " << values[id]->tostring() << endl;
       unique_ptr<Expr> v = values[id]->copy();
       here;
       //cout << "SUB " << name << " " << parameters.size() << " " << tostring() << " " << v->tostring() <<endl;
@@ -535,20 +576,34 @@ namespace Spunk
         return v->copy();
       else{
         here;
-        if (v->kind != ExFunc)
-          faileval;
+	ValueExpr* f = dynamic_cast<ValueExpr*>(&(*v));
+	if (f == 0)
+	  faileval;
+	ValueF* g = dynamic_cast<ValueF*>(f->v);
+	if (g == 0)
+	  faileval;
+
+	//        if (v->kind != ExFunc)
+        //  faileval;
         here;
         //Func v = v.get();
         //unique_ptr<Func> vv ((Func*)(&(v*)));
-        unique_ptr<Func> vv = v->FuncMe();
+	//        unique_ptr<Func> vv = g->FuncMe();
         // cout << tostring() << endl;
         // cout << v->tostring() << " " << typeid(*v).name() << endl;
         // cout << vv->name << " " << vv->isFunction << " " << vv->parameters.size() << " " << (vv->isValue?"true":"false") << endl;
-        if (vv->isFunction || vv->isValue)
-          faileval;
-        here;
-        unique_ptr<Func> result = applySubstitute(names, values)->FuncMe();
-        result->name = vv->name;
+	//        if (vv->isFunction || vv->isValue)
+	// faileval;
+	unique_ptr<Expr> funcValue;
+	//vector<string> parameters;
+	//	cout << "SUBST " << g->parameters.size() << " " << values.size() << endl;
+	//	cout << "SUBST " << g->tostring();
+	unique_ptr<Expr> result = g->funcValue->substitute(g->parameters, parameters);
+	//	unique_ptr<Expr> result = g->funcValue->substitute(g->parameters, values);
+
+	//        here;
+	// unique_ptr<Func> result = applySubstitute(names, values)->FuncMe();
+        //result->name = vv->name;
         return move(result);
       }
     }
@@ -585,7 +640,6 @@ namespace Spunk
             }
             here;
 	    // **********************
-
             vector<unique_ptr<Expr>> params;
             for(unsigned int j = 0; j < parameters.size(); j++){
 	      Value* v = parameters[j]->eval(env);
@@ -605,17 +659,17 @@ namespace Spunk
       for(int i = env.values.size() -1; 0 <= i; i--)
         if (name == env.values[i]->name)
           return env.values[i]->value;
-      if (stringContains(name, '.')){ // TODO isdouble
-        float res = 0.;
-        char* nameChars = (char*)(name.data());
-        sscanf(nameChars, "%g", &res);
-        return new ValueAny<double>((double)res, name);
-      } else if (isint(name)){
-        int res = 0;
-        char* nameChars = (char*)(name.data());
-        sscanf(nameChars, "%i", &res);
-        return new ValueAny<int>(res, name);
-      }
+      // if (stringContains(name, '.')){ // TODO isdouble
+      //   float res = 0.;
+      //   char* nameChars = (char*)(name.data());
+      //   sscanf(nameChars, "%g", &res);
+      //   return new ValueAny<double>((double)res, name);
+      // } else if (isint(name)){
+      //   int res = 0;
+      //   char* nameChars = (char*)(name.data());
+      //   sscanf(nameChars, "%i", &res);
+      //   return new ValueAny<int>(res, name);
+      // }
       cout << "Unknown variable: " + name << endl;
       faileval;
     }
@@ -683,7 +737,9 @@ namespace Spunk
     Value* eval(Env& env){
       here;
       Value* vv = v->eval(env);
-      for(unsigned int i = 0; i < vv->members.size(); i++)
+      //cout << "VV " << vv->tostring() << endl;
+      for(unsigned int i = 0; i < vv->members.size(); i++){
+	//	cout << "MEMBER " << vv->members[i]->name << endl;
         if (member == vv->members[i]->name){
           vector<Value*> params;
           params.push_back(vv);
@@ -691,6 +747,7 @@ namespace Spunk
             params.push_back(parameters[j]->eval(env));
           return vv->members[i]->eval(params);
         }
+      }
       cout << "Unknown member: " << member << endl;
       faileval;
     }
@@ -749,7 +806,7 @@ namespace Spunk
         result = new ValueF(value, parameters);
       else
         result = value->eval(env);
-      env.values.push_back(new envValue(name, result));
+      env.values.push_back(new namedValue<Value*>(name, result));
       return voidunit();
     }
   };
@@ -892,7 +949,7 @@ namespace Spunk
         faileval;
       vector<Value*>* vect = seqvalue->value;
       int length = env.values.size();
-      env.values.push_back(new envValue(variable, voidunit()));
+      env.values.push_back(new namedValue<Value*>(variable, voidunit()));
       for(unsigned int i = 0; i < vect->size(); i++)
         {
           env.values[length]->value = (*vect)[i];
@@ -1053,14 +1110,29 @@ namespace Spunk
     return parse(*(new parsingContext(s)));
   }
 
-  unique_ptr<string> getvar(parsingContext& context){
+  enum GetVarOption { NewVar, ExistingVar, None};
+
+  unique_ptr<string> getvar(parsingContext& context, GetVarOption option){
     if (!HasToken(context))
       return 0;
     unique_ptr<token> tokVar = NextToken(context);
     if (tokVar->type != Ident)
       return 0;
-    context.nextPos= tokVar->nextPos;
-    return unique_ptr<string>(new string(tokVar->s));
+    context.nextPos = tokVar->nextPos;
+    string result = tokVar->s;
+    switch(option){
+    case NewVar:
+      cout << result << " " << *context.nextid(result) << endl;
+      //      result = result + "_" + *context.nextid(result);
+      break;
+    case ExistingVar:
+      //      cout << result << " " << *context.id(result) << endl;
+      //      result = result + "_" + *context.id(result);
+      break;
+    case None:
+      break;
+    }
+    return unique_ptr<string>(new string(result));
   }
 
   unique_ptr<Expr> parseapp(parsingContext& context){
@@ -1082,8 +1154,24 @@ namespace Spunk
       break;
     case Ident:
       {
+	if (isint(tok->s)){
+	  int res = 0;
+	  char* nameChars = (char*)(tok->s.data());
+	  sscanf(nameChars, "%i", &res);
+	  unique_ptr<ValueExpr> result(new ValueExpr(new ValueAny<int>(res)));
+	  context.nextPos = tok->nextPos;
+	  return move(result);
+	}
+	if (isdouble(tok->s)){
+	  float res = 0;
+	  char* nameChars = (char*)(tok->s.data());
+	  sscanf(nameChars, "%g", &res);
+	  unique_ptr<ValueExpr> result(new ValueExpr(new ValueAny<double>(res)));
+	  context.nextPos = tok->nextPos;
+	  return move(result);
+	}
         unique_ptr<Func> result(new Func);
-        result->name = tok->s;
+        result->name = tok->s;//*context.idornot(tok->s);
         context.nextPos = tok->nextPos;
         if (!HasToken(context))
           return move(result);
@@ -1092,21 +1180,7 @@ namespace Spunk
           //int innerNextPos = nextPos;
           while(stackNotCommaClosePar(context, result->parameters));
           //    nextPos = innerNextPos;
-        }// else if (HasToken(context, ".")){
-        //   unique_ptr<string> f = getvar(context);
-        //   if (f == 0)
-        //     failparse;
-        //   result->isFunction = true;
-        //   unique_ptr<Func> inside(new Func);
-        //   inside->name = tok->s;
-        //   result->parameters.push_back(move(inside));
-        //   result->name = *f;
-        //   if (!HasToken(context, "("))
-        //     failparse;
-        //   //int innerNextPos = nextPos;
-        //   while(stackNotCommaClosePar(context, result->parameters));
-        //   //nextPos = innerNextPos;
-        // }
+        }
         return move(result);
       }
       break;
@@ -1128,7 +1202,7 @@ namespace Spunk
     unique_ptr<Expr> recPar = parseapp(context);
     if (HasToken(context, ".")){
       unique_ptr<Comp> result(new Comp);
-      unique_ptr<string> f = getvar(context);
+      unique_ptr<string> f = getvar(context, None);
       if (f == 0)
         failparse;
       if (!HasToken(context, "("))
@@ -1163,14 +1237,14 @@ namespace Spunk
     here;
     if (HasToken(context, "var")){
       unique_ptr<Definition> def(new Definition);
-      unique_ptr<string> varName = getvar(context);
+      unique_ptr<string> varName = getvar(context, NewVar);
       if (varName == 0)
         failparse;
       if (HasToken(context, "(")){
         def->isFunction = true;
         if (!HasToken(context, ")"))
           while(true){
-            unique_ptr<string> paramName = getvar(context);
+            unique_ptr<string> paramName = getvar(context, NewVar);
             if (paramName == 0)
               failparse;
             def->parameters.push_back(*paramName);
@@ -1186,18 +1260,12 @@ namespace Spunk
       if (!HasToken(context))
         failparse;
       unique_ptr<Expr> e = parseCommand(context);
-      // cout << "===" << e->tostring() << " " << (e->kind == ExFunc ? "fun" : "not fun") << endl;
-      // unique_ptr<Func> ee = e->FuncMe();
-      // cout << ee->name << endl;
-      // failparse;
-      //if (!HasToken(context, ";"))
-      //failparse;
       def->name = *varName;
       def->value = move(e);
       return move(def);
     }
     else if (HasToken(context, "set")){
-      unique_ptr<string> varName = getvar(context);
+      unique_ptr<string> varName = getvar(context, ExistingVar);
       if (varName == 0)
         failparse;
       if (!HasToken(context, "="))
@@ -1221,7 +1289,7 @@ namespace Spunk
     else if (HasToken(context, "for")){
       if (!HasToken(context, "("))
         failparse;
-      unique_ptr<string> varName = getvar(context);
+      unique_ptr<string> varName = getvar(context, NewVar);
       if (varName == 0)
         failparse;
       if (!HasToken(context, "in"))
