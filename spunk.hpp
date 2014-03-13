@@ -92,7 +92,6 @@ namespace Spunk {
     ExprKind kind;
     virtual unique_ptr<Expr> copy()=0;
     virtual unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values)=0;
-    virtual unique_ptr<Func> FuncMe()=0;
     virtual Value* eval(Env& env)=0;
     virtual string tostring()=0;
   };

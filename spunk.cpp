@@ -18,7 +18,7 @@ using namespace std;
 #define faileval {cout << "Line: " << __LINE__ << endl; throw new EvalException;}
 #define failparse {cout << "Line: " << __LINE__ << " " << context.nextPos << endl; throw new ParseException;}
 #define ccout(s) {cout << "Line: " << __LINE__ << " NextPos: " << nextPos << " " << s << endl; }
-#define here // {cout << "Here: " << __LINE__ << endl;}
+#define here //{cout << "Here: " << __LINE__ << endl;}
 #define check_parameters(siz) if (parameters.size() != siz) faileval;int n = 0;
 #define getany(any,v) ValueAny<any>* v ## ptr = dynamic_cast<ValueAny<any>*>(parameters[n]); if (v ## ptr == 0) faileval; any v = v ## ptr->value; n++;
 #define getptr(any,v) getany(any*,v)
@@ -461,8 +461,6 @@ namespace Spunk
     ExprKind kind;
     virtual unique_ptr<Expr> copy()=0;
     virtual unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values)=0;
-    virtual unique_ptr<Func> FuncMe()=0;
-    //    virtual unique_ptr<Expr> simplify()=0;
     virtual Value* eval(Env& env)=0;
     virtual string tostring()=0;
   };
@@ -478,11 +476,6 @@ namespace Spunk
       v = value;
     }
     unique_ptr<Expr> copy(){return unique_ptr<Expr>(new ValueExpr(v));}
-    virtual unique_ptr<Func> FuncMe(){
-      //      ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
-      cout << "FUNCME: " << v->tostring() << endl;
-      faileval;
-    }
     virtual unique_ptr<Expr> substitute(vector<string>&, vector<unique_ptr<Expr>>&){
       return copy();
     }
@@ -504,7 +497,6 @@ namespace Spunk
       return copy();
     }
     unique_ptr<Expr> copy(){return unique_ptr<Expr>(new StringExpr(v));}
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     virtual unique_ptr<Expr> substitute(vector<string>&, vector<unique_ptr<Expr>>&){
       unique_ptr<Expr> result(this);
       return result;
@@ -582,33 +574,9 @@ namespace Spunk
 	ValueF* g = dynamic_cast<ValueF*>(f->v);
 	if (g == 0)
 	  faileval;
-
-	//        if (v->kind != ExFunc)
-        //  faileval;
-        here;
-        //Func v = v.get();
-        //unique_ptr<Func> vv ((Func*)(&(v*)));
-	//        unique_ptr<Func> vv = g->FuncMe();
-        // cout << tostring() << endl;
-        // cout << v->tostring() << " " << typeid(*v).name() << endl;
-        // cout << vv->name << " " << vv->isFunction << " " << vv->parameters.size() << " " << (vv->isValue?"true":"false") << endl;
-	//        if (vv->isFunction || vv->isValue)
-	// faileval;
-	unique_ptr<Expr> funcValue;
-	//vector<string> parameters;
-	//	cout << "SUBST " << g->parameters.size() << " " << values.size() << endl;
-	//	cout << "SUBST " << g->tostring();
 	unique_ptr<Expr> result = g->funcValue->substitute(g->parameters, parameters);
-	//	unique_ptr<Expr> result = g->funcValue->substitute(g->parameters, values);
-
-	//        here;
-	// unique_ptr<Func> result = applySubstitute(names, values)->FuncMe();
-        //result->name = vv->name;
         return move(result);
       }
-    }
-    virtual unique_ptr<Func> FuncMe(){
-      return innerCopy();
     }
     Value* eval(Env& env){
       here;
@@ -733,7 +701,6 @@ namespace Spunk
       return applySubstitute(names, values);
       here;
     }
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     Value* eval(Env& env){
       here;
       Value* vv = v->eval(env);
@@ -782,7 +749,6 @@ namespace Spunk
       result->value = value->copy();
       return move(result);
     }
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       vector<string> subnames;
       vector<unique_ptr<Expr>> subvalues;
@@ -821,7 +787,6 @@ namespace Spunk
       result->value = value->copy();
       return move(result);
     }
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     virtual unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       unique_ptr<Assign> result(new Assign);
       result->name = name;
@@ -868,7 +833,6 @@ namespace Spunk
         result->commands.push_back(commands[i]->copy());
       return move(result);
     }
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       here;
       unique_ptr<Block> b(new Block);
@@ -924,7 +888,6 @@ namespace Spunk
       result->command = command->copy();
       return move(result);
     }
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       unique_ptr<For> result(new For);
       vector<string> subnames;
@@ -970,7 +933,6 @@ namespace Spunk
       result->command = command->copy();
       return move(result);
     }
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       unique_ptr<While> result(new While);
       result->cond = cond->substitute(names, values);
@@ -1002,7 +964,6 @@ namespace Spunk
       result->commande = commande->copy();
       return move(result);
     }
-    virtual unique_ptr<Func> FuncMe(){ faileval; }
     unique_ptr<Expr> substitute(vector<string>& names, vector<unique_ptr<Expr>>& values){
       unique_ptr<Ifte>result(new Ifte);
       result->cond = cond->substitute(names, values);
