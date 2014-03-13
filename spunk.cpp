@@ -16,7 +16,7 @@
 using namespace std;
 
 #define faileval {cout << "Line: " << __LINE__ << endl; throw new EvalException;}
-#define failparse {cout << "Line: " << __LINE__ << " " << nextPos << endl; throw new ParseException;}
+#define failparse {cout << "Line: " << __LINE__ << " " << context.nextPos << endl; throw new ParseException;}
 #define ccout(s) {cout << "Line: " << __LINE__ << " NextPos: " << nextPos << " " << s << endl; }
 #define here //{cout << "Here: " << __LINE__ << endl;}
 #define check_parameters(siz) if (parameters.size() != siz) faileval;int n = 0;
@@ -60,6 +60,33 @@ namespace Spunk
     virtual const char* what() const throw()
     {
       return "My exception happened";
+    }
+  };
+
+
+  class parsingContext {
+  public:
+    string s;
+    unsigned int nextPos = 0;
+    parsingContext(string s){
+      this->s = s;
+      this->nextPos = 0;
+    }
+    parsingContext(parsingContext& context){
+      this->s = context.s;
+      this->nextPos = context.nextPos;
+    }
+    bool hasChar(){
+      return nextPos < s.length();
+    }
+    char get(){
+      return s[nextPos];
+    }
+    bool hasChar(unsigned int len){
+      return nextPos + len < s.length();
+    }
+    char get(unsigned int len){
+      return s[nextPos + len];
     }
   };
 
@@ -108,52 +135,55 @@ namespace Spunk
     return isalpha(c) || isalnum(c) || c == '_';
   }
 
-  int identToken(string s, unsigned int pos){
+  int identToken(parsingContext& context){
     int len = 0;
-    if (s.length() <= pos)
+    if (!context.hasChar())
       return len;
-    if(stringContains(intchars, s[pos]))
-      while(pos < s.length() && stringContains(doublechars, s[pos + len]))
+    if(stringContains(intchars, context.get()))
+      while(context.hasChar(len) && stringContains(doublechars, context.get(len)))
         len++;
     else
-      while(pos < s.length() && isLetter(s[pos + len]))
+      while(context.hasChar(len) && isLetter(context.get(len)))
         len++;
     return len;
   }
 
-  bool HasToken(string s, unsigned int pos){
-    int length = s.length();
+  bool HasToken(parsingContext& context){
+    int length = context.s.length();
     if (0 == length)
       return false;
-    unsigned int maxpos = s.length() - 1;
+    unsigned int maxpos = context.s.length() - 1;
+    unsigned int pos = context.nextPos;
     while(pos <= maxpos){
-      if (pos < maxpos - 1 && s[pos] == '/' && s[pos + 1] == '/')
-        while(pos <= maxpos && s[pos] != '\n')
+      if (pos < maxpos - 1 && context.s[pos] == '/' && context.s[pos + 1] == '/')
+        while(pos <= maxpos && context.s[pos] != '\n')
           pos++;
-      else if (!isSpace(s[pos]))
+      else if (!isSpace(context.s[pos])){
         return true;
+      }
       pos++;
     }
     return false;
   }
 
-  unique_ptr<token> NextToken(string s, unsigned int pos){
+  unique_ptr<token> NextToken(parsingContext& context){
     unique_ptr<token> tok(new token);
     int len = 0;
     tokenType type = Unknown;
     bool done = false;
-
+    here;
     while(!done){
-      if (s.length() <= pos)
+      if (!context.hasChar())
         {
-          cout << pos << endl;
+          cout << "HALT " << context.nextPos << endl;
 	  //          handler(1);
           throw new exception();
           type = End;
           break;
         }
       done = true;
-      switch(s[pos]){
+      here;
+      switch(context.s[context.nextPos]){
       case '{':
       case '}':
       case '.':
@@ -168,7 +198,8 @@ namespace Spunk
       case '\t':
       case '\n':
       case '\r':
-        pos++;
+	here;
+        context.nextPos++;
         done = false;
         break;
       case '"':
@@ -176,58 +207,62 @@ namespace Spunk
           //      int nextPos = -12;
           //failparse;
           len = 1;
-          while(pos + len < s.length() && s[pos + len] != '"')
+          while(context.nextPos + len < context.s.length() && context.s[context.nextPos + len] != '"')
             len++;
           len++;
           type = StringCst;
         }
         break;
       case '/':
-        if (pos < s.length() - 2 && s[pos + 1] == '/'){
-          while(pos < s.length() && s[pos] != '\n')
-            pos++;
+	here;
+	if (context.nextPos < context.s.length() - 2 && context.s[context.nextPos + 1] == '/'){
+          while(context.nextPos < context.s.length() && context.s[context.nextPos] != '\n')
+            context.nextPos++;
           done = false;
-        }
+	  here;
+	}
         else{
           len = 1;
           type = Op;
         }
         break;
       default:
-        if(isOp(s[pos])){
+        if(isOp(context.get())){
           len = 1;
           type = Op;
         }
         else{
-          len = identToken(s, pos);
+          len = identToken(context);
           type = Ident;
         }
         break;
       }
     }
-
-    tok->pos = pos;
+    tok->pos = context.nextPos;
     if (type != End)
-      tok->s = s.substr(pos, len);
+      tok->s = context.s.substr(context.nextPos, len);
     tok->type = type;
-    tok->nextPos = pos + len;
-
+    tok->nextPos = context.nextPos + len;
     if (type == StringCst){
       if (type != End)
-        tok->s = s.substr(pos + 1, len - 2);
+        tok->s = context.s.substr(context.nextPos + 1, len - 2);
       //cout << "STRING " << pos << " " << len << " " << tok->s << endl;
     }
     return tok;
   }
 
-  bool HasToken(string& s, int& pos, string v){
-    if (!HasToken(s, pos))
+  bool HasToken(parsingContext& context, string v){
+    parsingContext inner (context);
+    if (!HasToken(inner))
       return false;
-    int nextPos = pos;
-    unique_ptr<token> tok = NextToken(s, nextPos);
+    here;
+    unique_ptr<token> tok = NextToken(inner);
+    here;
+    //    cout << "TOK:" << tok->s << "|" << endl;
     if (tok->s != v)
       return false;
-    pos = tok->nextPos;
+    here;
+    context.nextPos = tok->nextPos;
     return true;
   }
 
@@ -931,7 +966,7 @@ namespace Spunk
 
   class Parser {
   public:
-    virtual unique_ptr<Expr> parse(string s, int& nextPos) = 0;
+    virtual unique_ptr<Expr> parse(parsingContext& context) = 0;
   };
 
   class ParserUnaryOps: public Parser{
@@ -939,18 +974,18 @@ namespace Spunk
     Parser* rec;
   public:
     ParserUnaryOps(string ops, Parser* rec){this->ops = ops; this->rec = rec;}
-    unique_ptr<Expr> parse(string s, int& nextPos){
-      if (HasToken(s, nextPos, "-")){
-        if (!HasToken(s, nextPos))
+    unique_ptr<Expr> parse(parsingContext& context){
+      if (HasToken(context, "-")){
+        if (!HasToken(context))
           failparse;
-        unique_ptr<Expr> f1 = rec->parse(s, nextPos);
+        unique_ptr<Expr> f1 = rec->parse(context);
         unique_ptr<Func> result(new Func);
         result->name = "-";
         result->isFunction = true;
         result->parameters.push_back(move(f1));
         return move(result);
       }
-      return rec->parse(s, nextPos);
+      return rec->parse(context);
     }
   };
 
@@ -960,21 +995,19 @@ namespace Spunk
     Parser* rec;
   public:
     ParserBinOps(string ops, Parser* rec){this->ops = ops; this->rec = rec;}
-    unique_ptr<Expr> parse(string s, int& nextPos){
-      unique_ptr<Expr> f1 = rec->parse(s, nextPos);
+    unique_ptr<Expr> parse(parsingContext& context){
+      unique_ptr<Expr> f1 = rec->parse(context);
       while(true){
-        if (!HasToken(s, nextPos))
+        if (!HasToken(context))
           return f1;
-        int innerNextPos = nextPos;
-        unique_ptr<token> tok = NextToken(s, innerNextPos);
+        unique_ptr<token> tok = NextToken(context);
         if (tok->type == Op && tok->s.length() == 1 && ops.find(tok->s) != string::npos){
-          innerNextPos = tok->nextPos;
-          unique_ptr<Expr> f2 = rec->parse(s, innerNextPos);
+          context.nextPos = tok->nextPos;
+          unique_ptr<Expr> f2 = rec->parse(context);
           unique_ptr<Func> result(new Func);
           result->isInfix = true;
           result->isFunction = true;
           result->name = tok->s;
-          nextPos = innerNextPos;
           result->parameters.push_back(move(f1));
           result->parameters.push_back(move(f2));
           f1 = move(result);
@@ -986,22 +1019,22 @@ namespace Spunk
     }
   };
 
-  bool stackNotCommaClosePar(string s, int& nextPos, vector<unique_ptr<Expr>>& list);
-  unique_ptr<Expr> parseapp(string s, int& nextPos);
+  bool stackNotCommaClosePar(parsingContext& context, vector<unique_ptr<Expr>>& list);
+  unique_ptr<Expr> parseapp(parsingContext& context);
 
   class ParserApp: public Parser {
   public:
-    virtual unique_ptr<Expr> parse(string s, int& nextPos){
-      return parseapp(s, nextPos);
+    virtual unique_ptr<Expr> parse(parsingContext& context){
+      return parseapp(context);
     }
   };
 
-  unique_ptr<Expr> parsecomp(string s, int& nextPos);
+  unique_ptr<Expr> parsecomp(parsingContext& context);
 
   class ParserComp: public Parser {
   public:
-    virtual unique_ptr<Expr> parse(string s, int& nextPos){
-      return parsecomp(s, nextPos);
+    virtual unique_ptr<Expr> parse(parsingContext& context){
+      return parsecomp(context);
     }
   };
 
@@ -1012,39 +1045,37 @@ namespace Spunk
   Parser* parseUMinus = new ParserUnaryOps("-", parsePlus);
   Parser* parseMod = new ParserBinOps("%", parseUMinus);
 
-  unique_ptr<Expr> parse(string s, int& nextPos){
-    return parseMod->parse(s, nextPos);
+  unique_ptr<Expr> parse(parsingContext& context){
+    return parseMod->parse(context);
   }
 
   unique_ptr<Expr> parse(string s){
-    int nextPos = 0;
-    return parse(s, nextPos);
+    return parse(*(new parsingContext(s)));
   }
 
-  unique_ptr<string> getvar(string s, int& nextPos){
-    int innerPos = nextPos;
-    if (!HasToken(s, innerPos))
+  unique_ptr<string> getvar(parsingContext& context){
+    if (!HasToken(context))
       return 0;
-    unique_ptr<token> tokVar = NextToken(s, innerPos);
+    unique_ptr<token> tokVar = NextToken(context);
     if (tokVar->type != Ident)
       return 0;
-    nextPos = tokVar->nextPos;
+    context.nextPos= tokVar->nextPos;
     return unique_ptr<string>(new string(tokVar->s));
   }
 
-  unique_ptr<Expr> parseapp(string s, int& nextPos){
+  unique_ptr<Expr> parseapp(parsingContext& context){
     //result;
-    if (HasToken(s, nextPos, "(")){
+    if (HasToken(context, "(")){
       unique_ptr<Expr> recPar;
       unique_ptr<Func> result(new Func);
-      recPar = parse(s, nextPos);
-      if (!HasToken(s, nextPos, ")"))
+      recPar = parse(context);
+      if (!HasToken(context, ")"))
         faileval;
       result->parameters.push_back(move(recPar));
       result->isFunction = true;
       return move(result);
     }
-    unique_ptr<token> tok = NextToken(s, nextPos);
+    unique_ptr<token> tok = NextToken(context);
     switch(tok->type){
     case End:
       return 0;
@@ -1053,16 +1084,16 @@ namespace Spunk
       {
         unique_ptr<Func> result(new Func);
         result->name = tok->s;
-        nextPos = tok->nextPos;
-        if (!HasToken(s, tok->nextPos))
+        context.nextPos = tok->nextPos;
+        if (!HasToken(context))
           return move(result);
-        if (HasToken(s, nextPos, "(")){
+        if (HasToken(context, "(")){
           result->isFunction = true;
           //int innerNextPos = nextPos;
-          while(stackNotCommaClosePar(s, nextPos, result->parameters));
+          while(stackNotCommaClosePar(context, result->parameters));
           //    nextPos = innerNextPos;
-        }// else if (HasToken(s, nextPos, ".")){
-        //   unique_ptr<string> f = getvar(s, nextPos);
+        }// else if (HasToken(context, ".")){
+        //   unique_ptr<string> f = getvar(context);
         //   if (f == 0)
         //     failparse;
         //   result->isFunction = true;
@@ -1070,177 +1101,177 @@ namespace Spunk
         //   inside->name = tok->s;
         //   result->parameters.push_back(move(inside));
         //   result->name = *f;
-        //   if (!HasToken(s, nextPos, "("))
+        //   if (!HasToken(context, "("))
         //     failparse;
         //   //int innerNextPos = nextPos;
-        //   while(stackNotCommaClosePar(s, nextPos, result->parameters));
+        //   while(stackNotCommaClosePar(context, result->parameters));
         //   //nextPos = innerNextPos;
         // }
         return move(result);
       }
       break;
     case StringCst:
-      nextPos = tok->nextPos;
+      context.nextPos = tok->nextPos;
       return unique_ptr<Expr>(new StringExpr(tok->s));
     case Op:
       failparse;
     case Keyword:
       failparse;
     case Unknown:
-      cout << endl << "Unknown token at pos " << nextPos << s[nextPos] << endl;
+      cout << endl << "Unknown token at pos " << context.nextPos << context.get() << endl;
       failparse;
     }
     return 0;
   }
 
-  unique_ptr<Expr> parsecomp(string s, int& nextPos){
-    unique_ptr<Expr> recPar = parseapp(s, nextPos);
-    if (HasToken(s, nextPos, ".")){
+  unique_ptr<Expr> parsecomp(parsingContext& context){
+    unique_ptr<Expr> recPar = parseapp(context);
+    if (HasToken(context, ".")){
       unique_ptr<Comp> result(new Comp);
-      unique_ptr<string> f = getvar(s, nextPos);
+      unique_ptr<string> f = getvar(context);
       if (f == 0)
         failparse;
-      if (!HasToken(s, nextPos, "("))
+      if (!HasToken(context, "("))
         failparse;
       result->v = move(recPar);
       result->member = *f;
-      while(stackNotCommaClosePar(s, nextPos, result->parameters));
+      while(stackNotCommaClosePar(context, result->parameters));
       return move(result);
     }
     return recPar;
   }
 
 
-  bool stackNotCommaClosePar(string s, int& nextPos, vector<unique_ptr<Expr>>& list){
-    if (HasToken(s, nextPos, ")"))
+  bool stackNotCommaClosePar(parsingContext& context, vector<unique_ptr<Expr>>& list){
+    if (HasToken(context, ")"))
       return false;
-    list.push_back(parse(s, nextPos));
-    if (HasToken(s, nextPos, ")"))
+    list.push_back(parse(context));
+    if (HasToken(context, ")"))
       return false;
-    else if (HasToken(s, nextPos, ","))
+    else if (HasToken(context, ","))
       return true;
     return false;
   }
 
-  unique_ptr<Block> parseCommands(string s, int& pos);
+  unique_ptr<Block> parseCommands(parsingContext& context);
 
-  //Block* nop = new Block;
-  unique_ptr<Expr> parseCommand(string s, int& nextPos){
-    if (!HasToken(s, nextPos))
+  unique_ptr<Expr> parseCommand(parsingContext& context){
+    if (!HasToken(context))
       return unique_ptr<Expr>(new Block);
-    if (HasToken(s, nextPos, ";"))
+    if (HasToken(context, ";"))
       return unique_ptr<Expr>(new Block);
-    if (HasToken(s, nextPos, "var")){
+    here;
+    if (HasToken(context, "var")){
       unique_ptr<Definition> def(new Definition);
-      unique_ptr<string> varName = getvar(s, nextPos);
+      unique_ptr<string> varName = getvar(context);
       if (varName == 0)
         failparse;
-      if (HasToken(s, nextPos, "(")){
+      if (HasToken(context, "(")){
         def->isFunction = true;
-        if (!HasToken(s, nextPos, ")"))
+        if (!HasToken(context, ")"))
           while(true){
-            unique_ptr<string> paramName = getvar(s, nextPos);
+            unique_ptr<string> paramName = getvar(context);
             if (paramName == 0)
               failparse;
             def->parameters.push_back(*paramName);
-            if (!HasToken(s, nextPos, ",")){
-              if (HasToken(s, nextPos, ")"))
+            if (!HasToken(context, ",")){
+              if (HasToken(context, ")"))
                 break;
               failparse;
             }
           }
       }
-      if (!HasToken(s, nextPos, "="))
+      if (!HasToken(context, "="))
         failparse;
-      if (!HasToken(s, nextPos))
+      if (!HasToken(context))
         failparse;
-      unique_ptr<Expr> e = parseCommand(s, nextPos);
+      unique_ptr<Expr> e = parseCommand(context);
       // cout << "===" << e->tostring() << " " << (e->kind == ExFunc ? "fun" : "not fun") << endl;
       // unique_ptr<Func> ee = e->FuncMe();
       // cout << ee->name << endl;
       // failparse;
-      //if (!HasToken(s, nextPos, ";"))
+      //if (!HasToken(context, ";"))
       //failparse;
       def->name = *varName;
       def->value = move(e);
       return move(def);
     }
-    else if (HasToken(s, nextPos, "set")){
-      unique_ptr<string> varName = getvar(s, nextPos);
+    else if (HasToken(context, "set")){
+      unique_ptr<string> varName = getvar(context);
       if (varName == 0)
         failparse;
-      if (!HasToken(s, nextPos, "="))
+      if (!HasToken(context, "="))
         failparse;
-      if (!HasToken(s, nextPos))
+      if (!HasToken(context))
         failparse;
-      unique_ptr<Expr> e = parse(s, nextPos);
-      if (!HasToken(s, nextPos, ";"))
+      unique_ptr<Expr> e = parse(context);
+      if (!HasToken(context, ";"))
         failparse;
       unique_ptr<Assign> def (new Assign);
       def->name = *varName;
       def->value = move(e);
       return move(def);
     }
-    else if (HasToken(s, nextPos, "{")){
-      unique_ptr<Expr> c = parseCommands(s, nextPos);
-      if (!HasToken(s, nextPos, "}"))
+    else if (HasToken(context, "{")){
+      unique_ptr<Expr> c = parseCommands(context);
+      if (!HasToken(context, "}"))
         failparse;
       return c;
     }
-    else if (HasToken(s, nextPos, "for")){
-      if (!HasToken(s, nextPos, "("))
+    else if (HasToken(context, "for")){
+      if (!HasToken(context, "("))
         failparse;
-      unique_ptr<string> varName = getvar(s, nextPos);
+      unique_ptr<string> varName = getvar(context);
       if (varName == 0)
         failparse;
-      if (!HasToken(s, nextPos, "in"))
+      if (!HasToken(context, "in"))
         failparse;
-      if (!HasToken(s, nextPos))
+      if (!HasToken(context))
         failparse;
-      unique_ptr<Expr> e = parse(s, nextPos);
-      if (!HasToken(s, nextPos, ")"))
+      unique_ptr<Expr> e = parse(context);
+      if (!HasToken(context, ")"))
         failparse;
-      unique_ptr<Expr> c = parseCommand(s, nextPos);
+      unique_ptr<Expr> c = parseCommand(context);
       unique_ptr<For> fc (new For);
       fc->variable = *varName;
       fc->seq=move(e);
       fc->command=move(c);
       return move(fc);
     }
-    else if (HasToken(s, nextPos, "while")){
-      if (!HasToken(s, nextPos, "("))
+    else if (HasToken(context, "while")){
+      if (!HasToken(context, "("))
         failparse;
-      if (!HasToken(s, nextPos))
+      if (!HasToken(context))
         failparse;
-      unique_ptr<Expr> cond = parse(s, nextPos);
-      if (!HasToken(s, nextPos, ")"))
+      unique_ptr<Expr> cond = parse(context);
+      if (!HasToken(context, ")"))
         failparse;
-      unique_ptr<Expr> c = parseCommand(s, nextPos);
+      unique_ptr<Expr> c = parseCommand(context);
       unique_ptr<While> fc (new While);
       fc->cond = move(cond);
       fc->command = move(c);
       return move(fc);
     }
-    else if (HasToken(s, nextPos, "if")){
-      if (!HasToken(s, nextPos, "("))
+    else if (HasToken(context, "if")){
+      if (!HasToken(context, "("))
         failparse;
-      if (!HasToken(s, nextPos))
+      if (!HasToken(context))
         failparse;
-      unique_ptr<Expr> cond = parse(s, nextPos);
-      if (!HasToken(s, nextPos, ")"))
+      unique_ptr<Expr> cond = parse(context);
+      if (!HasToken(context, ")"))
         failparse;
-      unique_ptr<Expr> ct = parseCommand(s, nextPos);
-      if (!HasToken(s, nextPos, "else"))
+      unique_ptr<Expr> ct = parseCommand(context);
+      if (!HasToken(context, "else"))
         failparse;
-      unique_ptr<Expr> ce = parseCommand(s, nextPos);
+      unique_ptr<Expr> ce = parseCommand(context);
       unique_ptr<Ifte> fc (new Ifte);
       fc->cond = move(cond);
       fc->commandt = move(ct);
       fc->commande = move(ce);
       return move(fc);
     }
-    unique_ptr<Expr> e = parse(s, nextPos);
-    if (!HasToken(s, nextPos, ";"))
+    unique_ptr<Expr> e = parse(context);
+    if (!HasToken(context, ";"))
       failparse;
     // Call* call = new Call;
     // call->f = e;
@@ -1248,65 +1279,29 @@ namespace Spunk
   }
 
   unique_ptr<Expr> parseCommand(string s){
-    int pos = 0;
-    return parseCommand(s, pos);
+    return parseCommand(*(new parsingContext(s)));
   }
 
-  unique_ptr<Block> parseCommands(string s, int& pos){
+  unique_ptr<Block> parseCommands(parsingContext& context){
     vector<unique_ptr<Expr>> commands;
-    while(HasToken(s, pos)){
-      int innerPos = pos;
-      if(HasToken(s, innerPos, "}"))
+    parsingContext inner (context);
+    while(HasToken(inner)){
+      here;
+      context.nextPos = inner.nextPos;
+      if(HasToken(inner, "}"))
         break;
-      commands.push_back(parseCommand(s, pos));
+      here;
+      commands.push_back(parseCommand(inner));
     }
+    here;
     unique_ptr<Block> block (new Block);
     block->commands = move(commands);
     return block;
   }
 
   unique_ptr<Block> parseCommands(string s){
-    int pos = 0;
-    return parseCommands(s, pos);
+    return parseCommands(*(new parsingContext(s)));
   }
-
-  // // void pp(unique_ptr<Expr>& command){
-  // //   cout << command->tostring() << endl;
-  // // }
-
-  // void pp(unique_ptr<Expr> expr){
-  //   switch(expr->kind){
-  //   case ExFunc:
-  //     pp((unique_ptr<Func>)expr);
-  //     return;
-  //     break;
-  //   }
-  //   faileval;
-  // }
-
-  // void pp(unique_ptr<Func> func){
-  //   if (func->isInfix){
-  //     unsigned int size = func->parameters.size();
-  //     for(unsigned int i = 0; i < size; i++){
-  //    pp(func->parameters[i]);
-  //    if (i < size - 1)
-  //      cout << " " << func->name << " ";
-  //     }
-  //     return;
-  //   }
-  //   cout << func->name;
-  //   if (func->isFunction)
-  //     cout << "(";
-  //   unsigned int size = func->parameters.size();
-  //   for(unsigned int i = 0; i < size; i++)
-  //     {
-  //    pp(func->parameters[i]);
-  //    if (i < size - 1)
-  //      cout << ", ";
-  //     }
-  //   if (func->isFunction)
-  //     cout << ")";
-  // }
 
   ValueAny<double>* doubleValue(Value* p){
       ValueAny<int>* pi = dynamic_cast<ValueAny<int>*>(p);
@@ -1680,6 +1675,7 @@ public: \
     string readopt = "-s";
     string evalopt = "-e";
     for (int i = 0; i < (argc - 1) / 2; i++){
+      here;
       string s;
       if (argv[2 * i + 1] == readopt)
 	s = read(argv[2 * i + 2]);
