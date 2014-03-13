@@ -58,12 +58,23 @@ namespace Spunk {
     virtual Value* eval(vector<Value*>& parameters);
   };
 
+
+  struct envValue {
+    string name;
+    Value* value;
+    envValue(string name, Value* value){
+      this->name = name;
+      this->value = value;
+    }
+  };
+
   class Env {
   public:
-    vector<string> names;
-    vector<Value*> values;
+    vector<envValue*> values;
     vector<FValue*> functions;
-    void add(string name, Value* value);
+    void add(string name, Value* value){
+      values.push_back(new envValue(name, value));
+    }
   };
 
   ValueAny<double>* doubleValue(Value* p);

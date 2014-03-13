@@ -352,14 +352,21 @@ namespace Spunk
     virtual Value* eval(vector<Value*>& parameters)=0;
   };
 
+  struct envValue {
+    string name;
+    Value* value;
+    envValue(string name, Value* value){
+      this->name = name;
+      this->value = value;
+    }
+  };
+
   class Env {
   public:
-    vector<string> names;
-    vector<Value*> values;
+    vector<envValue*> values;
     vector<FValue*> functions;
     void add(string name, Value* value){
-      names.push_back(name);
-      values.push_back(value);
+      values.push_back(new envValue(name, value));
     }
   };
 
@@ -532,9 +539,9 @@ namespace Spunk
             return f->eval(params);
           }
         here;
-        for(int i = env.names.size() -1; 0 <= i; i--)
-          if (name == env.names[i]){
-            ValueF* f = dynamic_cast<ValueF*>(env.values[i]);
+        for(int i = env.values.size() -1; 0 <= i; i--)
+          if (name == env.values[i]->name){
+            ValueF* f = dynamic_cast<ValueF*>(env.values[i]->value);
             if (f == 0)
               faileval;
             if (f->parameters.size() != parameters.size()){
@@ -560,9 +567,9 @@ namespace Spunk
         faileval
       }
       here;
-      for(int i = env.names.size() -1; 0 <= i; i--)
-        if (name == env.names[i])
-          return env.values[i];
+      for(int i = env.values.size() -1; 0 <= i; i--)
+        if (name == env.values[i]->name)
+          return env.values[i]->value;
       if (stringContains(name, '.')){ // TODO isdouble
         float res = 0.;
         char* nameChars = (char*)(name.data());
@@ -702,11 +709,12 @@ namespace Spunk
     }
     virtual string tostring() { return "var " + name + " = " + value->tostring() + ";"; }
     virtual Value* eval(Env& env){
-      env.names.push_back(name);
+      Value* result;
       if (isFunction)
-        env.values.push_back(new ValueF(value, parameters));
+        result = new ValueF(value, parameters);
       else
-        env.values.push_back(value->eval(env));
+        result = value->eval(env);
+      env.values.push_back(new envValue(name, result));
       return voidunit();
     }
   };
@@ -733,9 +741,9 @@ namespace Spunk
     virtual Value* eval(Env& env){
       //Value* v = value.eval(env);
       //cout << name << " <- " << v->tostring() << endl;
-      for(int i = env.names.size() -1; 0 <= i; i--)
-        if (name == env.names[i]){
-          env.values[i] = value->eval(env);
+      for(int i = env.values.size() -1; 0 <= i; i--)
+        if (name == env.values[i]->name){
+          env.values[i]->value = value->eval(env);
           return voidunit();
         }
       cout << "Unknown variable: " + name << endl;
@@ -802,11 +810,10 @@ namespace Spunk
     }
     virtual Value* eval(Env& env){
       here;
-      int length = env.names.size();
+      int length = env.values.size();
       here;
       for(unsigned int i = 0; i < commands.size(); i++)
         commands[i]->eval(env);
-      env.names.resize(length);
       env.values.resize(length);
       here;
       return voidunit();
@@ -849,15 +856,13 @@ namespace Spunk
       if (seqvalue == 0)
         faileval;
       vector<Value*>* vect = seqvalue->value;
-      int length = env.names.size();
-      env.names.push_back(variable);
-      env.values.push_back(voidunit());
+      int length = env.values.size();
+      env.values.push_back(new envValue(variable, voidunit()));
       for(unsigned int i = 0; i < vect->size(); i++)
         {
-          env.values[length] = (*vect)[i];
+          env.values[length]->value = (*vect)[i];
           command->eval(env);
         }
-      env.names.resize(length);
       env.values.resize(length);
       return voidunit();
     }
@@ -885,9 +890,8 @@ namespace Spunk
     }
     virtual Value* eval(Env& env){
       while(cond->eval(env)->get_int() != 0){
-        int length = env.names.size();
+        int length = env.values.size();
         command->eval(env);
-        env.names.resize(length);
         env.values.resize(length);
       }
       return voidunit();
@@ -1675,7 +1679,6 @@ public: \
     unique_ptr<Block> scenes(new Block);
     string readopt = "-s";
     string evalopt = "-e";
-
     for (int i = 0; i < (argc - 1) / 2; i++){
       string s;
       if (argv[2 * i + 1] == readopt)
@@ -1686,7 +1689,6 @@ public: \
 	cout << "-s <file> | -e <expr>" << endl;
 	throw new EvalException();
       }
-
       unique_ptr<Block> c = parseCommands(s);
       for(unsigned int j = 0; j < c->commands.size(); j++)
 	scenes->commands.push_back(c->commands[j]->copy());
