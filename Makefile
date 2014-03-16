@@ -33,11 +33,11 @@ spark: spunk.hpp spunk.o spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
 	g++ -g -o spark spunk.o spark.cpp -I. -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
 
 cleanoutput:
-	rm -f output/image*.bmp output/*.mp3 output/out*.mp4
+	rm -f output/image*.* output/*.mp3 output/out*.mp4
 
 vidonly:
 	rm -f output/out1.mp4
-	ffmpeg -r 25 -pattern_type glob -i 'output/image*.bmp' -c:v libx264 output/out1.mp4
+	ffmpeg -r 25 -pattern_type glob -i 'output/image*.png' -c:v libx264 output/out1.mp4
 
 vidaudio:
 	rm -f output/out.mp4
@@ -69,5 +69,5 @@ backup:
 
 publish:
 	cp backup.tar ~/host/"spark.tar."`date +%Y%m%d`
-	cp output/out.mp4 ~/host/"fifpark."`date +%Y%m%d`.mp4
+	cp output/out.mp4 ~/host/"fifpark."`date +%Y%m%d.b`.mp4
 	ls -ltr ~/host | tail -2

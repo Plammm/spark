@@ -1,7 +1,7 @@
 //arret de bus
 //dinosaur 3d
 
-var speed = 10;
+var speed = 1;
 
 var rate = 25;
 var imageid = 0;
@@ -10,7 +10,7 @@ var snapshot() =
 {
   img.display(disp);
   disp.wait(waitlength);
-  img.savebmp(imageid);
+  img.savepng(imageid);
   set imageid = imageid + 1;
 };
 

@@ -487,28 +487,6 @@ namespace Spunk
     }
   };
 
-  class StringExpr: public Expr {
-  public:
-    string v;
-    StringExpr(string s){
-      v = s;
-    }
-    virtual unique_ptr<Expr> simplify(){
-      return copy();
-    }
-    unique_ptr<Expr> copy(){return unique_ptr<Expr>(new StringExpr(v));}
-    virtual unique_ptr<Expr> substitute(vector<string>&, vector<unique_ptr<Expr>>&){
-      unique_ptr<Expr> result(this);
-      return result;
-    }
-    virtual Value* eval(Env&){
-      return newstring(v);
-    }
-    virtual string tostring(){
-      return v;
-    }
-  };
-
   class Func: public Expr {
   public:
     string name;
@@ -607,7 +585,6 @@ namespace Spunk
               faileval;
             }
             here;
-	    // **********************
             vector<unique_ptr<Expr>> params;
             for(unsigned int j = 0; j < parameters.size(); j++){
 	      Value* v = parameters[j]->eval(env);
@@ -807,22 +784,6 @@ namespace Spunk
       faileval;
     }
   };
-
-  // class Call: public Expr {
-  // public:
-  //   Func f;
-  //   virtual string tostring() {
-  //     return f.tostring() + ";";
-  //   }
-  //   virtual Value* eval(Env& env){
-  //     //cout << "ENV" << env.names.size() << endl;
-  //     f.eval(env);
-  //     //  int length = env.names.size();
-  //     //for(unsigned int i = 0; i < commands.size(); i++)
-  //     //     commands[i]->eval(env);
-  //     //env.resize(length);
-  //   }
-  // };
 
   class Block: public Expr {
   public:
@@ -1147,7 +1108,7 @@ namespace Spunk
       break;
     case StringCst:
       context.nextPos = tok->nextPos;
-      return unique_ptr<Expr>(new StringExpr(tok->s));
+      return unique_ptr<Expr>(new ValueExpr(newstring(tok->s)));
     case Op:
       failparse;
     case Keyword:

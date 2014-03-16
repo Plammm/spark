@@ -897,6 +897,46 @@ namespace Spark {
     }
   } fsavebmp;
 
+
+  class Fsavejpeg: public Spunk::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      open_parameters;
+      getptr(CImg<unsigned char>,img);
+      getint(p1);
+      close_parameters;
+      string s = boost::lexical_cast<std::string>(p1);
+      string s0 = "000000";
+      s0.resize(6 - s.size());
+      string filename = "/home/fmaurel/prog/spark/output/image" + s0 + s + ".jpeg";
+      img->save_jpeg(filename.data());
+      return voidunit();
+    }
+    Fsavejpeg(){
+      name = "savejpeg";
+    }
+  } fsavejpeg;
+
+
+  class Fsavepng: public Spunk::member<Value> {
+  public:
+    Value* eval(vector<Value*>& parameters){
+      open_parameters;
+      getptr(CImg<unsigned char>,img);
+      getint(p1);
+      close_parameters;
+      string s = boost::lexical_cast<std::string>(p1);
+      string s0 = "000000";
+      s0.resize(6 - s.size());
+      string filename = "/home/fmaurel/prog/spark/output/image" + s0 + s + ".png";
+      img->save_png(filename.data());
+      return voidunit();
+    }
+    Fsavepng(){
+      name = "savepng";
+    }
+  } fsavepng;
+
   ValueAny<Image::supportPoint*>* newpoint(Image::supportPoint* point){
     Spunk::ValueAny<Image::supportPoint*>* v = new Spunk::ValueAny<Image::supportPoint*>(point, "point");
     v->add(&flinkpoint)
@@ -920,6 +960,8 @@ namespace Spark {
     ValueAny<CImg<unsigned char>*>* v = new ValueAny<CImg<unsigned char>*>(point, "image");
     v->add(&fdrawmesh)
       ->add(&fsavebmp)
+      ->add(&fsavejpeg)
+      ->add(&fsavepng)
       ->add(&fdisplay)
       ->add(&fnewdisplay)
       ->add(&frectangle)

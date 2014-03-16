@@ -1,6 +1,6 @@
 var play_dino() =
 {
-
+  img.clear();
   var longshow(x, y, s, col, opacity, size) =
   {
     for(i in seq(1, s.length())){
@@ -11,21 +11,22 @@ var play_dino() =
 
   {
     var intro = newvector();
-    intro.push("A l'aube de l'an 2000...");
-    intro.push("Et au lieu de faire des trucs super balezes et mega importants");
+    intro.push("À l'aube de l'an 2000...");
+    intro.push("Et au lieu de faire des trucs super balèzes et mega importants");
     intro.push("(comme il fera ensuite)");
     intro.push("Matthieu travaille sur des objets en 3D.");
     intro.push("Ce travail s'est perdu...");
     intro.push("");
     intro.push("Il a donc fallu le refaire.");
     intro.push("");
-    intro.push("(c'est Matthieu qui va etre content)");
+    intro.push("(c'est Matthieu qui va être content)");
 
     var size = 30;
     for(i in seq(0, intro.length() - 1)){
       longshow(100, 100 + size * i, intro.get(i), white, 1, size);
       stay(0.5);
     }
+    stay(2);
   }
 
   var dino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
