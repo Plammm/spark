@@ -3,21 +3,35 @@
 #   CImg
 #   ffmpeg
 
-.phony:all e vid cleanoutput show backup publish abribus output/dino happy list
+.phony:all e vid cleanoutput show backup publish abribus output/dino happy list touch
 
 all: output/abribus output/dino output/happy list
 #	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
 
-output/%: spark scenes/common.sp scenes/%.sp
-	rm -rf output/%
-	mkdir -p output/%
-	./spark -s scenes/common.sp -s scenes/%.sp -e "play_%();"
+touch:
+	touch scenes/common.sp
+
+subdirs:
+	mkdir -p output/abribus
+	mkdir -p output/dino
+	mkdir -p output/happy
+
+output/%: scenes/%.sp spark scenes/common.sp
+	rm -rf $@
+	mkdir -p $@
+	./spark -s scenes/common.sp -s scenes/meshes.sp -s $< -e play_$(*F)"();"
 
 list:
 	rm -f imagelist.txt
 	printf "file '%s'\n" output/abribus/* >> imagelist.txt
 	printf "file '%s'\n" output/dino/* >> imagelist.txt
 	printf "file '%s'\n" output/happy/* >> imagelist.txt
+
+cleanoutput:
+	rm -f output/image*.* output/*/image*.* output/*.mp3 output/out*.mp4
+
+cleandirs:
+	rmdir output/abribus output/dino output/happy
 
 fast: spark
 	./spark -s scenes/common.sp -e 'set waitlength = 0;' -s scenes/scene.sp
@@ -33,17 +47,6 @@ spunk.o: spunk.cpp
 
 spark: spunk.hpp spunk.o spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
 	g++ -g -o spark spunk.o spark.cpp -I. -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
-
-cleanoutput:
-	rm -f output/image*.* output/*.mp3 output/out*.mp4
-
-cleandino:
-	rm -f output/dino/image*.*
-
-subdirs:
-	mkdir -p output/abribus
-	mkdir -p output/dino
-	mkdir -p output/happy
 
 vidonly:
 	rm -f output/out1.mp4

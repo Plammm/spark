@@ -1112,6 +1112,7 @@ namespace Spunk
     case Op:
       failparse;
     case Keyword:
+      cout << "Keyword: " << tok->s << " " << tok->pos << " " << context.s << endl;
       failparse;
     case Unknown:
       cout << endl << "Unknown token at pos " << context.nextPos << context.get() << endl;
