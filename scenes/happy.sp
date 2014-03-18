@@ -1,6 +1,6 @@
 var play_happy () =
 {
-
+  setsubdir("happy");
   // for(i in seq(0, 100)){
   //   for(toto in seq(0, 100)){
   //     //    var beta = beta0 + beta1 * (toto / 100.0);
@@ -10,7 +10,7 @@ var play_happy () =
   //     snapshot();
   //   }
   // }
-  
+
   // rotate(v.get(1), - 250, 5.4, 20);
   // stay(1);
   // rotate(v.get(0), - 250, 5.4, 20);

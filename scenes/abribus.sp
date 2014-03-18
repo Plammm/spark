@@ -5,6 +5,7 @@
 
 var play_abribus() =
 {
+  setsubdir("abribus");
   var mysterymachine = loadimage("/home/fmaurel/prog/spark/input/mysterymachine2.gif");
   var rat1 = loadimage("/home/fmaurel/prog/spark/input/rat1.gif");
   var rat1small = rat1.resize(-50, -50);

@@ -1,10 +1,13 @@
 //arret de bus
 //dinosaur 3d
 
-var speed = 10;
+var speed = 1;
 
 var outputdir = "/home/fmaurel/prog/spark/output";
 setoutputdir(outputdir);
+
+var setsubdir(dir) =
+  setoutputdir(outputdir + "/" + dir);
 
 var rate = 25;
 var imageid = 0;

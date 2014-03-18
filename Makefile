@@ -3,26 +3,33 @@
 #   CImg
 #   ffmpeg
 
-.phony:all e vid cleanoutput show backup publish
+.phony:all e vid cleanoutput show backup publish abribus dino happy list
 
-all: spark
-	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
+all: abribus dino happy list
+#	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
+
+list:
+	rm -f imagelist.txt
+	printf "file '%s'\n" output/abribus/* >> imagelist.txt
+	printf "file '%s'\n" output/dino/* >> imagelist.txt
+	printf "file '%s'\n" output/happy/* >> imagelist.txt
 
 fast: spark
 	./spark -s scenes/common.sp -e 'set waitlength = 0;' -s scenes/scene.sp
-
-dino: spark
-	./spark -s scenes/common.sp -s scenes/dino.sp -e "play_dino();"
-
-
 
 raster: spark
 	./spark -s scenes/common.sp -e "raster();"
 
 abribus: spark
+	rm -f output/abribus/image*.*
 	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -e "play_abribus();"
 
+dino: spark
+	rm -f output/dino/image*.*
+	./spark -s scenes/common.sp -s scenes/dino.sp -e "play_dino();"
+
 happy: spark
+	rm -f output/happy/image*.*
 	./spark -s scenes/common.sp -s scenes/happy.sp -e "play_happy();"
 
 e:
@@ -37,9 +44,18 @@ spark: spunk.hpp spunk.o spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
 cleanoutput:
 	rm -f output/image*.* output/*.mp3 output/out*.mp4
 
+cleandino:
+	rm -f output/dino/image*.*
+
+subdirs:
+	mkdir -p output/abribus
+	mkdir -p output/dino
+	mkdir -p output/happy
+
 vidonly:
 	rm -f output/out1.mp4
-	ffmpeg -r 25 -pattern_type glob -i 'output/image*.png' -c:v libx264 output/out1.mp4
+#	ffmpeg -r 25 -pattern_type glob -i 'output/image*.png' -c:v libx264 output/out1.mp4
+	ffmpeg -r 25 -f concat -i imagelist.txt -c:v libx264 output/out1.mp4
 
 vidaudio:
 	rm -f output/out.mp4

@@ -1,5 +1,6 @@
 var play_dino() =
 {
+  setsubdir("dino");
   img.clear();
   var longshow(x, y, s, col, opacity, size) =
   {
