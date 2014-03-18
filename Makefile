@@ -3,10 +3,15 @@
 #   CImg
 #   ffmpeg
 
-.phony:all e vid cleanoutput show backup publish abribus dino happy list
+.phony:all e vid cleanoutput show backup publish abribus output/dino happy list
 
-all: abribus dino happy list
+all: output/abribus output/dino output/happy list
 #	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
+
+output/%: spark scenes/common.sp scenes/%.sp
+	rm -rf output/%
+	mkdir -p output/%
+	./spark -s scenes/common.sp -s scenes/%.sp -e "play_%();"
 
 list:
 	rm -f imagelist.txt
@@ -19,18 +24,6 @@ fast: spark
 
 raster: spark
 	./spark -s scenes/common.sp -e "raster();"
-
-abribus: spark
-	rm -f output/abribus/image*.*
-	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -e "play_abribus();"
-
-dino: spark
-	rm -f output/dino/image*.*
-	./spark -s scenes/common.sp -s scenes/dino.sp -e "play_dino();"
-
-happy: spark
-	rm -f output/happy/image*.*
-	./spark -s scenes/common.sp -s scenes/happy.sp -e "play_happy();"
 
 e:
 	emacs Makefile spark.cpp&

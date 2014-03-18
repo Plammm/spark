@@ -1,12 +1,10 @@
-var imgens = loadimage("/home/fmaurel/prog/spark/input/ens1.jpg");
-var imgfif1 = loadimage("/home/fmaurel/prog/spark/input/fif1.jpg");
-var imgfif2 = loadimage("/home/fmaurel/prog/spark/input/fif2.jpg");
-
 play_abribus();
-
 play_dino();
-
 play_happy();
+
+// var imgens = loadimage("/home/fmaurel/prog/spark/input/ens1.jpg");
+// var imgfif1 = loadimage("/home/fmaurel/prog/spark/input/fif1.jpg");
+// var imgfif2 = loadimage("/home/fmaurel/prog/spark/input/fif2.jpg");
 
 // raster();
 
