@@ -3,10 +3,18 @@
 #   CImg
 #   ffmpeg
 
-.phony:all e vid cleanoutput show backup publish abribus output/dino happy list touch
+.phony:all e vid vids vidaudios cleanoutput show backup publish abribus output/dino happy list touch
 
-all: output/abribus output/dino output/happy list
+all: output/abribus/ok.txt output/dino/ok.txt output/happy/ok.txt
 #	./spark -s scenes/common.sp -s scenes/meshes.sp -s scenes/abribus.sp -s scenes/dino.sp -s scenes/happy.sp -s scenes/scene.sp
+
+vids: output/abribus/out_a.mp4 output/dino/out_a.mp4 output/happy/out_a.mp4
+vidaudios: output/abribus/out_b.mp4 output/dino/out_b.mp4 output/happy/out_b.mp4
+output/out.mp4:output/abribus/out_c.ts output/dino/out_c.ts output/happy/out_c.ts
+	rm -f $@
+	ffmpeg -i "concat:output/abribus/out_c.ts|output/dino/out_c.ts|output/happy/out_c.ts" -c copy -bsf:a aac_adtstoasc output/out.mp4
+
+vid: output/out.mp4
 
 touch:
 	touch scenes/common.sp
@@ -16,10 +24,26 @@ subdirs:
 	mkdir -p output/dino
 	mkdir -p output/happy
 
-output/%: scenes/%.sp spark scenes/common.sp
-	rm -rf $@
-	mkdir -p $@
+output/%/ok.txt: scenes/%.sp spark scenes/common.sp
+	rm -rf output/$(*F)
+	mkdir -p output/$(*F)
 	./spark -s scenes/common.sp -s scenes/meshes.sp -s $< -e play_$(*F)"();"
+	touch $@
+
+
+output/%/out_a.mp4: output/%/ok.txt
+	rm -f $@
+	ffmpeg -r 25 -pattern_type glob -i output/$(*F)'/image*.png' -c:v libx264 $@
+
+output/%/out_b.mp4: output/%/out_a.mp4
+	rm -f $@
+	ffmpeg -i $< -i input/getlucky.mp3 -map 0 -map 1 -codec:a aac -strict experimental -b:a 192k -shortest output/$(*F)/out_b.mp4
+
+output/%/out_c.ts: output/%/out_b.mp4
+	rm -f $@
+	ffmpeg -i $< -c copy -bsf:v h264_mp4toannexb -f mpegts output/$(*F)/out_c.ts
+
+
 
 list:
 	rm -f imagelist.txt
@@ -31,7 +55,7 @@ cleanoutput:
 	rm -f output/image*.* output/*/image*.* output/*.mp3 output/out*.mp4
 
 cleandirs:
-	rmdir output/abribus output/dino output/happy
+	rm -rf output/abribus output/dino output/happy
 
 fast: spark
 	./spark -s scenes/common.sp -e 'set waitlength = 0;' -s scenes/scene.sp
@@ -47,19 +71,6 @@ spunk.o: spunk.cpp
 
 spark: spunk.hpp spunk.o spark.cpp ../CImg/CImg-1.5.7/CImg.h #Makefile
 	g++ -g -o spark spunk.o spark.cpp -I. -I../CImg/CImg-1.5.7 -Wall -W -Wsign-compare -ansi -pedantic -Dcimg_use_vt100 -Dcimg_use_png -I/usr/X11R6/include  -lm -L/usr/X11R6/lib -lpthread -lX11 -lpng -lboost_system -lboost_filesystem -std=c++11
-
-vidonly:
-	rm -f output/out1.mp4
-#	ffmpeg -r 25 -pattern_type glob -i 'output/image*.png' -c:v libx264 output/out1.mp4
-	ffmpeg -r 25 -f concat -i imagelist.txt -c:v libx264 output/out1.mp4
-
-vidaudio:
-	rm -f output/out.mp4
-	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec:a aac -strict experimental -b:a 192k -shortest output/out.mp4
-
-vid:	vidonly vidaudio
-#	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy output/out.mp4
-#	ffmpeg -i output/out1.mp4 -i input/getlucky.mp3 -map 0 -map 1 -codec copy -shortest output/out.mp4
 
 vidtoimages:
 	mkdir -p videoextracts/testvideoiphone
