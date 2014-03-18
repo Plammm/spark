@@ -878,6 +878,27 @@ namespace Spark {
     }
   } ftext;
 
+  class Foutputdir: public Spunk::FValue {
+  public:
+    string* dir;
+    string filename(int id, string ext){
+      string s = boost::lexical_cast<std::string>(id);
+      string s0 = "000000";
+      s0.resize(6 - s.size());
+      return *dir + "/image" + s0 + s + "." + ext;
+    }
+    Value* eval(vector<Value*>& parameters){
+      open_parameters;
+      getany(string, s);
+      close_parameters;
+      dir = new string(s);
+      return voidunit();
+    }
+    Foutputdir(){
+      name = "setoutputdir";
+    }
+  } foutputdir;
+
   class Fsavebmp: public Spunk::member<Value> {
   public:
     Value* eval(vector<Value*>& parameters){
@@ -885,18 +906,13 @@ namespace Spark {
       getptr(CImg<unsigned char>,img);
       getint(p1);
       close_parameters;
-      string s = boost::lexical_cast<std::string>(p1);
-      string s0 = "000000";
-      s0.resize(6 - s.size());
-      string filename = "/home/fmaurel/prog/spark/output/image" + s0 + s + ".bmp";
-      img->save_bmp(filename.data());
+      img->save_bmp(foutputdir.filename(p1, "bmp").data());
       return voidunit();
     }
     Fsavebmp(){
       name = "savebmp";
     }
   } fsavebmp;
-
 
   class Fsavejpeg: public Spunk::member<Value> {
   public:
@@ -905,18 +921,13 @@ namespace Spark {
       getptr(CImg<unsigned char>,img);
       getint(p1);
       close_parameters;
-      string s = boost::lexical_cast<std::string>(p1);
-      string s0 = "000000";
-      s0.resize(6 - s.size());
-      string filename = "/home/fmaurel/prog/spark/output/image" + s0 + s + ".jpeg";
-      img->save_jpeg(filename.data());
+      img->save_jpeg(foutputdir.filename(p1, "jpeg").data());
       return voidunit();
     }
     Fsavejpeg(){
       name = "savejpeg";
     }
   } fsavejpeg;
-
 
   class Fsavepng: public Spunk::member<Value> {
   public:
@@ -925,11 +936,7 @@ namespace Spark {
       getptr(CImg<unsigned char>,img);
       getint(p1);
       close_parameters;
-      string s = boost::lexical_cast<std::string>(p1);
-      string s0 = "000000";
-      s0.resize(6 - s.size());
-      string filename = "/home/fmaurel/prog/spark/output/image" + s0 + s + ".png";
-      img->save_png(filename.data());
+      img->save_png(foutputdir.filename(p1, "png").data());
       return voidunit();
     }
     Fsavepng(){
@@ -983,6 +990,7 @@ namespace Spark {
     env->functions.push_back(&floadimage);
     env->functions.push_back(&fnewpoint);
     env->functions.push_back(&fnewmetametaball);
+    env->functions.push_back(&foutputdir);
     return env;
   }
 }

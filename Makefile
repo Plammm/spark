@@ -14,6 +14,8 @@ fast: spark
 dino: spark
 	./spark -s scenes/common.sp -s scenes/dino.sp -e "play_dino();"
 
+
+
 raster: spark
 	./spark -s scenes/common.sp -e "raster();"
 

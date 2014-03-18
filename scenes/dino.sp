@@ -9,17 +9,20 @@ var play_dino() =
     }
   }
 
+  var dino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
+  var queuedino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
+
   {
     var intro = newvector();
-    intro.push("À l'aube de l'an 2000...");
-    intro.push("Et au lieu de faire des trucs super balèzes et mega importants");
+    intro.push("A l'aube de l'an 2000...");
+    intro.push("Et au lieu de faire des trucs super complexes et mega importants");
     intro.push("(comme il fera ensuite)");
     intro.push("Matthieu travaille sur des objets en 3D.");
     intro.push("Ce travail s'est perdu...");
     intro.push("");
     intro.push("Il a donc fallu le refaire.");
     intro.push("");
-    intro.push("(c'est Matthieu qui va être content)");
+    intro.push("(c'est bonheur)");
 
     var size = 30;
     for(i in seq(0, intro.length() - 1)){
@@ -28,9 +31,6 @@ var play_dino() =
     }
     stay(2);
   }
-
-  var dino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
-  var queuedino = loadmesh("/home/fmaurel/prog/spark/input/dino2.off", color(0, 255, 0), 0.5);
 
   {
     var alpha = -0.5;

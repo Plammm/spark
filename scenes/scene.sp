@@ -27,8 +27,8 @@ img.drawimage(imgfif2, 100, 100, 1, 0);
 snapshot();
 
 stay(5);
-title(300, "Le Dino");
-set year = 1997;
+//title(300, "Le Dino");
+//set year = 1997;
 play_dino();
 raster();
 raster();
