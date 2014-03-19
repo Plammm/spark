@@ -97,6 +97,28 @@ var play_abribus() =
       img.drawimage(rat1smallsmall, 400 + deltax * (i + 50), 160 + deltay * (i + 55), 1, 1);
     }
 
+    var play_introabribus() =
+    {
+      var size = 40;
+      for (time in seq (0, speed, 50)){
+	img.text(100, 100, "Un soir normal...", white, 0.1, size);
+	snapshot();
+      }
+      for (time in seq (0, speed, 50)){
+	img.text(100, 100 + size, "Pas loin de l'Ecole normale...", white, 0.1, size);
+	snapshot();
+      }
+      stay(2);
+      for (time in seq (0, speed, 50)){
+	img.text(100, 100 + 2 * size, "Collecte d'affiche, normal...", white, 0.1, size);
+	snapshot();
+      }
+      stay(1);
+      img.clear();
+    }
+
+    play_introabribus();
+
     var maxtime = 400;
     for (time in seq (0, speed, maxtime)){
       restore();

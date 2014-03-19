@@ -35,9 +35,22 @@ output/%/out_a.mp4: output/%/ok.txt
 	rm -f $@
 	ffmpeg -r 25 -pattern_type glob -i output/$(*F)'/image*.png' -c:v libx264 $@
 
-output/%/out_b.mp4: output/%/out_a.mp4
+output/%/out_b.mp4: output/%/out_a.mp4 output/%/out.mp3
 	rm -f $@
-	ffmpeg -i $< -i input/getlucky.mp3 -map 0 -map 1 -codec:a aac -strict experimental -b:a 192k -shortest output/$(*F)/out_b.mp4
+	ffmpeg -i $< -i output/$(*F)/out.mp3 -map 0 -map 1 -codec:a aac -strict experimental -b:a 192k -shortest output/$(*F)/out_b.mp4
+
+# Donna Summer I feel Love 1977
+# lil louis french kiss 1989?
+# Daft Punk Homework 1997
+# Wamdue project you're the reason 2000
+# peter heller big love
+
+output/abribus/out.mp3: input/DaftPunkDaFunk.mp3
+	cp $< $@
+output/dino/out.mp3: input/harderbetterstrongfaster.mp3
+	cp $< $@
+output/happy/out.mp3:
+	cp input/getlucky.mp3 $@
 
 output/%/out_c.ts: output/%/out_b.mp4
 	rm -f $@
@@ -94,5 +107,5 @@ backup:
 
 publish:
 	cp backup.tar ~/host/"spark.tar."`date +%Y%m%d`
-	cp output/out.mp4 ~/host/"fifpark."`date +%Y%m%d.b`.mp4
+	cp output/out.mp4 ~/host/"fifpark."`date +%Y%m%d`.mp4
 	ls -ltr ~/host | tail -2
